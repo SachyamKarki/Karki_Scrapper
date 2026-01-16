@@ -79,14 +79,14 @@ Use the automation script to start scraping. This runs the scraper, enriches dat
 ### 2. Launch the Dashboard
 Start the web interface to view and manage your data.
 ```bash
-python app.py
+python run.py
 ```
 Open your browser and navigate to: **[`http://localhost:5555`](http://localhost:5555)**
 
 ---
 
 ### File Structure
--   `app.py`: The entry point for the Flask web application.
+-   `run.py`: The entry point for the Flask web application.
 -   `run.sh`: Master script that orchestrates the entire scraping and enrichment flow.
 -   `scripts/`: Contains utility scripts (`enrich_emails.py`, `merge_to_excel.py`, `seed_db.py`).
 -   `data/`: Stores generated CSVs, Excel files, and logs.
