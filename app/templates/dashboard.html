@@ -1,0 +1,1598 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Karki's Scraper | {{ title }}</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lobster&display=swap"
+        rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-main);
+            padding-bottom: 40px;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--card-bg);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .navbar-brand {
+            font-family: 'Lobster', cursive;
+            font-weight: 400;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 2rem;
+        }
+
+        .navbar-brand img {
+            height: 60px;
+            width: auto;
+        }
+
+        /* Navbar Links */
+        .nav-link {
+            color: var(--text-main);
+            font-weight: 500;
+            margin-left: 1rem;
+            font-size: 1.05rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary-color);
+        }
+
+        /* Professional Search Bar */
+        .navbar-search {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+        }
+
+        .navbar-search .form-control {
+            padding-left: 54px;
+            padding-right: 20px;
+            height: 58px;
+            border-radius: 29px;
+            background-color: #f3f4f6;
+            border: 1px solid transparent;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            box-shadow: none;
+        }
+
+        .navbar-search .form-control:focus {
+            background-color: #ffffff;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .navbar-search .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 1.3rem;
+            pointer-events: none;
+        }
+
+        /* Loader Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary-color);
+        }
+
+        .loading-text {
+            margin-top: 1rem;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        /* Data Card */
+        .data-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        table.table {
+            border-collapse: collapse;
+            border: 1px solid var(--border-color);
+        }
+
+        table.table thead th {
+            background-color: #f9fafb;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 12px 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        table.table tbody td {
+            padding: 8px 12px;
+            vertical-align: middle;
+            border: 1px solid var(--border-color);
+            color: #374151;
+        }
+
+        .col-name {
+            font-weight: 600;
+            color: #111827;
+            max-width: 200px;
+            white-space: normal;
+            line-height: 1.4;
+        }
+
+        .col-category {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .col-address {
+            max-width: 250px;
+            white-space: normal;
+            line-height: 1.4;
+        }
+
+        .col-email {
+            max-width: 180px;
+            font-size: 0.85rem;
+        }
+
+        .email-item {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .website-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .website-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Status Dropdown */
+        .status-select {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .status-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-in_progress {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-approved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Row-level status highlighting */
+        tr.row-pending {
+            background-color: #ffffff !important;
+        }
+
+        tr.row-in_progress {
+            background-color: #dbeafe !important;
+            /* Light blue */
+        }
+
+        tr.row-approved {
+            background-color: #d1fae5 !important;
+            /* Light green */
+        }
+
+        tr.row-rejected {
+            background-color: #fee2e2 !important;
+            /* Light red */
+        }
+
+        tr.row-pending td,
+        tr.row-in_progress td,
+        tr.row-approved td,
+        tr.row-rejected td {
+            background-color: inherit !important;
+            border-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .btn-analysis {
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            background-color: #f3f4f6;
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+            transition: all 0.2s;
+        }
+
+        .btn-analysis:hover {
+            background-color: #e5e7eb;
+            color: #111827;
+        }
+
+        .table-search-container {
+            position: relative;
+            max-width: 500px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .table-search-container .bi-search {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            pointer-events: none;
+        }
+
+        .table-search-input {
+            padding: 8px 12px 8px 36px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .table-search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Analysis Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 3% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #111827;
+        }
+
+        .close {
+            color: #9ca3af;
+            font-size: 32px;
+            font-weight: 300;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close:hover {
+            color: #111827;
+        }
+
+        .modal-body {
+            padding: 32px;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .score-card {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .score-card h3 {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin: 0 0 12px 0;
+            font-weight: 500;
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .score-excellent {
+            color: #10b981;
+        }
+
+        .score-good {
+            color: #f59e0b;
+        }
+
+        .score-poor {
+            color: #ef4444;
+        }
+
+        .metrics-section {
+            margin-bottom: 24px;
+        }
+
+        .metrics-section h3 {
+            font-size: 1.1rem;
+            color: #111827;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            color: #111827;
+            font-weight: 600;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+        }
+
+        .check-item i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+
+        .check-pass {
+            color: #10b981;
+        }
+
+        .check-fail {
+            color: #ef4444;
+        }
+
+        .recommendation-card {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .recommendation-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 0.95rem;
+            color: #92400e;
+        }
+
+        .recommendation-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #78350f;
+        }
+
+        .btn-analyzing {
+            background-color: #f59e0b !important;
+            color: white !important;
+            pointer-events: none;
+        }
+
+        .btn-notes {
+            background-color: #3b82f6 !important;
+            color: white !important;
+        }
+
+        .btn-notes:hover {
+            background-color: #2563eb !important;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Checkbox Styles */
+        .select-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        /* Notes Button Styles */
+        .btn-add-note {
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            background-color: #f59e0b;
+            color: white;
+            border: 1px solid #f59e0b;
+            transition: all 0.2s;
+        }
+
+        .btn-add-note:hover {
+            background-color: #d97706;
+            border-color: #d97706;
+        }
+
+        .btn-view-note {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+
+        .btn-view-note:hover {
+            background-color: #059669;
+            border-color: #059669;
+        }
+
+        /* Notes Modal */
+        .notes-modal-body {
+            padding: 24px;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .notes-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        .notes-image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 12px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn-save-note {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save-note:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Page Jumper UI */
+        .page-jumper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 12px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .page-jumper-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .page-jumper-select {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 4px 24px 4px 8px;
+            /* Extra padding for arrow */
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #111827;
+            background-color: #f9fafb;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .page-jumper-select:hover {
+            background-color: white;
+            border-color: var(--primary-color);
+        }
+
+        .page-jumper-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+    </style>
+    <script>
+        let lastId = null;
+        const BATCH_ID = "{{ batch_id }}";
+
+        function startScrape() {
+            const query = document.querySelector('input[name="query"]').value;
+            if (!query) return;
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        // Status Update Function
+        async function updateStatus(itemId, newStatus) {
+            try {
+                const response = await fetch('/api/update_status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_id: itemId, status: newStatus })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    console.error('Failed to update status');
+                } else {
+                    // Update row background color
+                    const row = document.querySelector(`tr[data-id="${itemId}"]`);
+                    if (row) {
+                        // Remove all status classes
+                        row.classList.remove('row-pending', 'row-in_progress', 'row-approved', 'row-rejected');
+                        // Add new status class
+                        row.classList.add(`row-${newStatus}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Status update error:', error);
+            }
+        }
+
+        // Analysis Functions
+        function runAnalysis(itemId) {
+            const button = document.querySelector(`button[onclick="runAnalysis('${itemId}')"]`);
+            if (!button) return;
+
+            // Change button to analyzing state
+            button.innerHTML = '<i class="bi bi-hourglass-split spinner"></i> Analyzing...';
+            button.classList.add('btn-analyzing');
+
+            fetch(`/api/analyze/${itemId}`, {
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.status === 'completed') {
+                        // Change button to Results
+                        button.innerHTML = 'Results <i class="bi bi-file-text"></i>';
+                        button.classList.remove('btn-analyzing');
+                        button.classList.add('btn-notes');
+                        button.setAttribute('onclick', `showNotes('${itemId}')`);
+                    } else {
+                        // Show error
+                        alert(data.error || 'Analysis failed');
+                        button.innerHTML = 'Analysis <i class="bi bi-graph-up"></i>';
+                        button.classList.remove('btn-analyzing');
+                    }
+                })
+                .catch(error => {
+                    console.error('Analysis error:', error);
+                    alert('Failed to analyze website');
+                    button.innerHTML = 'Analysis <i class="bi bi-graph-up"></i>';
+                    button.classList.remove('btn-analyzing');
+                });
+
+        }
+
+        // Notes Functions
+        function openNotesModal(itemId) {
+            const modal = document.getElementById('notesModal');
+            modal.setAttribute('data-item-id', itemId);
+
+            // Load existing note if any
+            fetch(`/api/get_note/${itemId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.note) {
+                        document.getElementById('notesText').value = data.note.text || '';
+                        if (data.note.image) {
+                            document.getElementById('notesImagePreview').src = data.note.image;
+                            document.getElementById('notesImagePreview').style.display = 'block';
+                        }
+                    } else {
+                        document.getElementById('notesText').value = '';
+                        document.getElementById('notesImagePreview').style.display = 'none';
+                    }
+                });
+
+            modal.style.display = 'block';
+        }
+
+        function closeNotesModal() {
+            document.getElementById('notesModal').style.display = 'none';
+            document.getElementById('notesText').value = '';
+            document.getElementById('notesImagePreview').style.display = 'none';
+            document.getElementById('notesImageInput').value = '';
+        }
+
+        function previewNotesImage() {
+            const input = document.getElementById('notesImageInput');
+            const preview = document.getElementById('notesImagePreview');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveNote() {
+            const modal = document.getElementById('notesModal');
+            const itemId = modal.getAttribute('data-item-id');
+            const text = document.getElementById('notesText').value;
+            const imageInput = document.getElementById('notesImageInput');
+
+            const formData = new FormData();
+            formData.append('text', text);
+            if (imageInput.files && imageInput.files[0]) {
+                formData.append('image', imageInput.files[0]);
+            }
+
+            fetch(`/api/save_note/${itemId}`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update button to show note exists
+                        const button = document.querySelector(`button[onclick="openNotesModal('${itemId}')"]`);
+                        if (button) {
+                            button.innerHTML = 'View Note <i class="bi bi-eye"></i>';
+                            button.classList.remove('btn-add-note');
+                            button.classList.add('btn-view-note');
+                        }
+                        closeNotesModal();
+                    } else {
+                        alert('Failed to save note');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving note:', error);
+                    alert('Failed to save note');
+                });
+        }
+
+        async function showNotes(itemId) {
+            try {
+                const response = await fetch(`/api/get_analysis/${itemId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('modalBusinessName').textContent = data.business_name;
+                    renderAnalysisResults(data.analysis);
+                    document.getElementById('analysisModal').style.display = 'block';
+                } else {
+                    alert(data.error || 'Failed to load analysis');
+                }
+            } catch (error) {
+                console.error('Error loading notes:', error);
+                alert('Failed to load analysis data');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('analysisModal').style.display = 'none';
+        }
+
+        function renderAnalysisResults(analysis) {
+            const resultsDiv = document.getElementById('analysisResults');
+
+            if (analysis.status === 'failed') {
+                resultsDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <strong>Analysis Failed:</strong> ${analysis.error || 'Unknown error'}
+                        </div>
+                    `;
+                return;
+            }
+
+            const getScoreClass = (score) => {
+                if (score >= 90) return 'score-excellent';
+                if (score >= 70) return 'score-good';
+                if (score >= 50) return 'score-fair';
+                return 'score-poor';
+            };
+
+            const getStatusColor = (status) => {
+                if (status === 'excellent') return '#10b981';
+                if (status === 'good') return '#3b82f6';
+                if (status === 'needs_improvement') return '#f59e0b';
+                return '#ef4444';
+            };
+
+            // Check if we have the new comprehensive format
+            const hasComprehensiveData = analysis.categories && analysis.overall_score !== undefined;
+
+            if (hasComprehensiveData) {
+                // NEW COMPREHENSIVE 9-CATEGORY DISPLAY
+                let html = `
+                        <div style="text-align: center; margin-bottom: 32px; padding: 32px; background: white; border: 1px solid #e5e7eb; border-radius: 8px;">
+                            <h2 style="margin: 0 0 12px 0; font-size: 3rem; font-weight: 700; color: #1f2937;">${analysis.overall_score}/100</h2>
+                            <p style="margin: 0; font-size: 1.1rem; color: #4b5563;">${analysis.summary}</p>
+                            <p style="margin: 12px 0 0 0; font-size: 0.9rem; color: #9ca3af;">Analyzed ${new Date(analysis.timestamp).toLocaleString()}</p>
+                        </div>
+                    `;
+
+                // Top Priorities Section
+                if (analysis.top_priorities && analysis.top_priorities.length > 0) {
+                    html += `
+                            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+                                <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 1.1rem; font-weight: 600;">Top Priorities</h3>
+                                ${analysis.top_priorities.map(priority => `
+                                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; margin-bottom: 12px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                                            <div style="flex: 1;">
+                                                <h4 style="margin: 0 0 6px 0; color: #1f2937; font-size: 0.95rem; font-weight: 600;">${priority.title}</h4>
+                                                <p style="margin: 0; font-size: 0.85rem; color: #6b7280; line-height: 1.5;">${priority.description}</p>
+                                            </div>
+                                            <span style="background: white; border: 1px solid #e5e7eb; color: #374151; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">${priority.category}</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                }
+
+                // 9 Category Cards
+                const categories = [
+                    { key: 'performance', name: 'Performance', desc: 'Speed & load time' },
+                    { key: 'mobile', name: 'Mobile Responsiveness', desc: 'Responsive design' },
+                    { key: 'seo', name: 'SEO', desc: 'Search optimization' },
+                    { key: 'crawlability', name: 'Crawlability', desc: 'Search engine access' },
+                    { key: 'security', name: 'Security', desc: 'HTTPS & headers' },
+                    { key: 'accessibility', name: 'Accessibility', desc: 'Usability for all' },
+                    { key: 'code_quality', name: 'Code Quality', desc: 'Clean code' },
+                    { key: 'analytics', name: 'Analytics', desc: 'Tracking setup' },
+                    { key: 'infrastructure', name: 'Infrastructure', desc: 'Server & hosting' }
+                ];
+
+                categories.forEach(cat => {
+                    const data = analysis.categories[cat.key];
+                    if (!data) return;
+
+                    const statusColor = getStatusColor(data.status);
+                    const scoreClass = getScoreClass(data.score);
+
+                    html += `
+                            <div style="margin-bottom: 16px; border: 1px solid #e5e7eb; border-radius: 8px; background: white; overflow: hidden;">
+                                <div style="padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${statusColor};" onclick="toggleCategory('${cat.key}')">
+                                    <div style="flex: 1;">
+                                        <h3 style="margin: 0 0 4px 0; font-size: 1.05rem; color: #1f2937; font-weight: 600;">${cat.name}</h3>
+                                        <p style="margin: 0; font-size: 0.85rem; color: #6b7280;">${cat.desc}</p>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 16px;">
+                                        <span class="${scoreClass}" style="font-size: 1.75rem; font-weight: 700; min-width: 60px; text-align: right;">${data.score}</span>
+                                        <i class="bi bi-chevron-down" id="chevron-${cat.key}" style="font-size: 1.1rem; color: #9ca3af; transition: transform 0.3s;"></i>
+                                    </div>
+                                </div>
+                                <div id="category-${cat.key}" style="display: none; padding: 24px; background: white; border-top: 1px solid #e5e7eb;">
+                        `;
+
+                    // Helper to get user-friendly labels
+                    const getLabel = (key) => {
+                        const labels = {
+                            'load_time': 'Page Load Time', 'page_size_kb': 'Page Size (KB)', 'page_size_mb': 'Page Size (MB)',
+                            'total_images': 'Total Images', 'lazy_loaded_images': 'Lazy Loaded Images', 'webp_images': 'Modern Format Images',
+                            'external_scripts': 'External Scripts', 'css_files': 'CSS Files', 'minified_css': 'CSS Minified',
+                            'minified_js': 'JS Minified', 'viewport_tag': 'Viewport Meta Tag', 'viewport_width': 'Responsive Width',
+                            'media_queries': 'Responsive CSS', 'title_tag': 'Page Title', 'title_length': 'Title Length',
+                            'meta_description': 'Meta Description', 'meta_desc_length': 'Description Length', 'h1_count': 'H1 Headings',
+                            'h2_count': 'H2 Headings', 'h3_count': 'H3 Headings', 'canonical_tag': 'Canonical URL',
+                            'structured_data': 'Schema Markup', 'open_graph': 'Social Media Tags', 'indexable': 'Indexable',
+                            'robots_txt': 'Robots.txt', 'sitemap_link': 'XML Sitemap', 'internal_links': 'Internal Links',
+                            'https': 'HTTPS', 'csp': 'Security Policy', 'hsts': 'Force HTTPS', 'x_frame_options': 'Clickjack Protection',
+                            'mixed_content': 'Mixed Content', 'alt_text_coverage': 'Alt Text Coverage (%)', 'form_labels': 'Form Labels',
+                            'aria_landmarks': 'ARIA Landmarks', 'lang_attribute': 'Language Tag', 'semantic_html': 'Semantic HTML Tags',
+                            'inline_styles': 'Inline Styles', 'inline_scripts': 'Inline Scripts', 'deprecated_tags': 'Deprecated Tags',
+                            'google_analytics_ga4': 'Google Analytics 4', 'google_tag_manager': 'Google Tag Manager',
+                            'facebook_pixel': 'Facebook Pixel', 'response_time': 'Response Time (s)', 'compression': 'Compression',
+                            'compression_enabled': 'Compression Active', 'cache_control': 'Caching', 'cdn_detected': 'CDN', 'redirects': 'Redirects'
+                        };
+                        return labels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    };
+
+                    // Metrics
+                    if (data.metrics && Object.keys(data.metrics).length > 0) {
+                        html += '<div style="margin-bottom: 24px;"><h4 style="margin: 0 0 16px 0; color: #1f2937; font-size: 0.95rem; font-weight: 600;">Metrics</h4>';
+                        for (const [key, value] of Object.entries(data.metrics)) {
+                            const label = getLabel(key);
+                            if (typeof value === 'boolean') {
+                                const icon = value ? 'bi-check-circle-fill check-pass' : 'bi-x-circle-fill check-fail';
+                                const status = value ? 'Yes' : 'No';
+                                html += `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f3f4f6;">
+                                            <span style="color: #374151; font-size: 0.9rem;">${label}</span>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <span style="color: #6b7280; font-size: 0.85rem;">${status}</span>
+                                                <i class="bi ${icon}" style="font-size: 1rem;"></i>
+                                            </div>
+                                        </div>
+                                    `;
+                            } else {
+                                html += `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f3f4f6;">
+                                            <span style="color: #374151; font-size: 0.9rem;">${label}</span>
+                                            <span style="color: #1f2937; font-weight: 600; font-size: 0.9rem;">${value}</span>
+                                        </div>
+                                    `;
+                            }
+                        }
+                        html += '</div>';
+                    }
+
+                    // Checks
+                    if (data.checks && Object.keys(data.checks).length > 0) {
+                        html += '<div style="margin-bottom: 24px;"><h4 style="margin: 0 0 16px 0; color: #1f2937; font-size: 0.95rem; font-weight: 600;">Checks</h4>';
+                        for (const [key, value] of Object.entries(data.checks)) {
+                            const label = getLabel(key);
+                            if (typeof value === 'boolean') {
+                                const icon = value ? 'bi-check-circle-fill check-pass' : 'bi-x-circle-fill check-fail';
+                                const status = value ? 'Passed' : 'Failed';
+                                html += `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f3f4f6;">
+                                            <span style="color: #374151; font-size: 0.9rem;">${label}</span>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <span style="color: #6b7280; font-size: 0.85rem;">${status}</span>
+                                                <i class="bi ${icon}" style="font-size: 1rem;"></i>
+                                            </div>
+                                        </div>
+                                    `;
+                            } else {
+                                html += `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f3f4f6;">
+                                            <span style="color: #374151; font-size: 0.9rem;">${label}</span>
+                                            <span style="color: #1f2937; font-weight: 600; font-size: 0.9rem;">${value}</span>
+                                        </div>
+                                    `;
+                            }
+                        }
+                        html += '</div>';
+                    }
+
+                    // Recommendations
+                    if (data.recommendations && data.recommendations.length > 0) {
+                        html += '<div><h4 style="margin: 0 0 16px 0; color: #1f2937; font-size: 0.95rem; font-weight: 600;">Recommendations</h4>';
+                        data.recommendations.forEach(rec => {
+                            html += `
+                                    <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; margin-bottom: 12px;">
+                                        <h4 style="margin: 0 0 6px 0; color: #1f2937; font-size: 0.9rem; font-weight: 600;">${rec.title}</h4>
+                                        <p style="margin: 0; color: #6b7280; font-size: 0.85rem; line-height: 1.5;">${rec.description}</p>
+                                    </div>
+                                `;
+                        });
+                        html += '</div>';
+                    }
+
+                    html += '</div></div>';
+                });
+
+                resultsDiv.innerHTML = html;
+
+            } else {
+                // LEGACY 4-CATEGORY DISPLAY (for backward compatibility)
+                let html = `
+                        <div class="score-grid">
+                            <div class="score-card">
+                                <h3>Performance</h3>
+                                <p class="score-value ${getScoreClass(analysis.performance_score)}">${analysis.performance_score}</p>
+                                <p style="font-size: 0.75rem; color: #6b7280; margin-top: 8px;">Load speed & page size</p>
+                            </div>
+                            <div class="score-card">
+                                <h3>SEO</h3>
+                                <p class="score-value ${getScoreClass(analysis.seo_score)}">${analysis.seo_score}</p>
+                                <p style="font-size: 0.75rem; color: #6b7280; margin-top: 8px;">Search engine optimization</p>
+                            </div>
+                            <div class="score-card">
+                                <h3>Accessibility</h3>
+                                <p class="score-value ${getScoreClass(analysis.accessibility_score)}">${analysis.accessibility_score}</p>
+                                <p style="font-size: 0.75rem; color: #6b7280; margin-top: 8px;">Usability for all users</p>
+                            </div>
+                            <div class="score-card">
+                                <h3>Best Practices</h3>
+                                <p class="score-value ${getScoreClass(analysis.best_practices_score)}">${analysis.best_practices_score}</p>
+                                <p style="font-size: 0.75rem; color: #6b7280; margin-top: 8px;">Code quality & security</p>
+                            </div>
+                        </div>
+                    `;
+
+                // Performance Metrics
+                if (analysis.performance && analysis.performance.metrics) {
+                    html += '<div class="metrics-section">';
+                    html += '<h3>Performance Metrics</h3>';
+                    html += '<p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 12px;">How fast your website loads and responds</p>';
+                    for (const [key, value] of Object.entries(analysis.performance.metrics)) {
+                        html += `
+                                <div class="metric-item">
+                                    <span class="metric-label">${key}</span>
+                                    <span class="metric-value">${value}</span>
+                                </div>
+                            `;
+                    }
+                    html += '</div>';
+                }
+
+                // SEO Checks
+                if (analysis.seo && analysis.seo.checks) {
+                    html += '<div class="metrics-section">';
+                    html += '<h3>SEO Checks</h3>';
+                    html += '<p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 12px;">Elements that help search engines understand and rank your site</p>';
+                    for (const [key, value] of Object.entries(analysis.seo.checks)) {
+                        const icon = value ? 'bi-check-circle-fill check-pass' : 'bi-x-circle-fill check-fail';
+                        html += `
+                                <div class="check-item">
+                                    <i class="bi ${icon}"></i>
+                                    <span>${key}</span>
+                                </div>
+                            `;
+                    }
+                    html += '</div>';
+                }
+
+                // Accessibility Checks
+                if (analysis.accessibility && analysis.accessibility.checks) {
+                    html += '<div class="metrics-section">';
+                    html += '<h3>Accessibility Checks</h3>';
+                    html += '<p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 12px;">Features that make your site usable for people with disabilities</p>';
+                    for (const [key, value] of Object.entries(analysis.accessibility.checks)) {
+                        const icon = value ? 'bi-check-circle-fill check-pass' : 'bi-x-circle-fill check-fail';
+                        html += `
+                                <div class="check-item">
+                                    <i class="bi ${icon}"></i>
+                                    <span>${key}</span>
+                                </div>
+                            `;
+                    }
+                    html += '</div>';
+                }
+
+                // Recommendations
+                if (analysis.recommendations && analysis.recommendations.length > 0) {
+                    html += '<div class="metrics-section">';
+                    html += '<h3>Top Recommendations</h3>';
+                    html += `<p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 12px;">Actionable improvements to boost your website's performance</p>`;
+                    analysis.recommendations.forEach(rec => {
+                        html += `
+                                <div class="recommendation-card">
+                                    <h4>${rec.title}</h4>
+                                    <p>${rec.description}</p>
+                                </div>
+                            `;
+                    });
+                    html += '</div>';
+                }
+
+                resultsDiv.innerHTML = html;
+            }
+        }
+
+        // Toggle category expansion
+        function toggleCategory(categoryKey) {
+            const content = document.getElementById(`category-${categoryKey}`);
+            const chevron = document.getElementById(`chevron-${categoryKey}`);
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                content.style.display = 'none';
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+
+
+        // Enhanced Filtering Function
+        function filterTable() {
+            const searchInput = document.getElementById('tableSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value.toLowerCase();
+            const cityFilter = document.getElementById('cityFilter').value.toLowerCase();
+
+            const tbody = document.querySelector('table.table tbody');
+            const rows = tbody.getElementsByTagName('tr');
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const nameCell = rows[i].querySelector('.col-name');
+                const categoryCell = rows[i].querySelector('.col-category');
+                const addressCell = rows[i].querySelector('.col-address');
+
+                if (!nameCell || !categoryCell || !addressCell) continue;
+
+                const nameText = (nameCell.textContent || nameCell.innerText).toLowerCase();
+                const categoryText = (categoryCell.textContent || categoryCell.innerText).toLowerCase();
+                const addressText = (addressCell.textContent || addressCell.innerText).toLowerCase();
+
+                const matchesSearch = nameText.indexOf(searchInput) > -1;
+                const matchesCategory = categoryFilter === '' || categoryText === categoryFilter;
+                // Simple city check: does address contain the city name?
+                const matchesCity = cityFilter === '' || addressText.indexOf(cityFilter) > -1;
+
+                if (matchesSearch && matchesCategory && matchesCity) {
+                    rows[i].style.display = '';
+                    visibleCount++;
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+
+            // Update count
+            const countEl = document.querySelector('.card-header .text-muted');
+            if (countEl) {
+                countEl.textContent = `${visibleCount} places found`;
+            }
+        }
+
+        // Populate Filters on Load
+        document.addEventListener('DOMContentLoaded', function () {
+            const rows = document.querySelectorAll('table.table tbody tr');
+            const categories = new Set();
+            const cities = new Set();
+
+            rows.forEach(row => {
+                const cat = row.querySelector('.col-category')?.textContent;
+                if (cat && cat !== '-') categories.add(cat.trim());
+
+                const addr = row.querySelector('.col-address a')?.textContent;
+                if (addr) {
+                    // Extract city - assuming format "Street, City, ..." or just finding the city in the address
+                    // For simplicity, we'll try to split by comma and take the relevant part, 
+                    // but since addresses vary, let's just use known cities if possible or simple extraction.
+                    // Better approach for now: Use the whole address parts as potential filters or better,
+                    // if the user wants "City", we explicitly look for common Nepal cities in the address string
+                    // since we don't have a structured City field.
+                    // Let's extract unique words from address that look like cities or just use the whole address for now?
+                    // No, let's try to extract the last or second to last part of comma separated values.
+                    const parts = addr.split(',');
+                    if (parts.length >= 2) {
+                        // usually "Street, City" or "Street, City, Country"
+                        // Let's guess the city is often the 2nd part or 2nd to last.
+                        // Let's just collect all unique parts and let user filter? No that's too much.
+                        // Let's hardcode a list of common cities to check against for now, 
+                        // OR just extract the part before "Kathmandu" etc.
+                        // actually, let's just dump all text content of addresses into a set of 'tokens' 
+                        // and see... no.
+
+                        // Let's take the second to last item if available, assuming "Street, City, Country" or "Street, City"
+                        // If just "City", take it.
+                        let potentialCity = parts[parts.length - 2]?.trim();
+                        if (!potentialCity && parts.length === 1) potentialCity = parts[0].trim();
+
+                        if (potentialCity && isNaN(potentialCity)) { // avoid numbers
+                            cities.add(potentialCity);
+                        }
+                    } else if (parts.length === 1) {
+                        cities.add(parts[0].trim());
+                    }
+                }
+            });
+
+            const catSelect = document.getElementById('categoryFilter');
+            Array.from(categories).sort().forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                catSelect.appendChild(opt);
+            });
+
+            const citySelect = document.getElementById('cityFilter');
+            Array.from(cities).sort().forEach(c => {
+                if (c.length > 20) return; // skip long junk
+                const opt = document.createElement('option');
+                opt.value = c; // filtering stores value to match against address
+                opt.textContent = c;
+                citySelect.appendChild(opt);
+            });
+        });
+
+        // Table Search Functionality (Legacy Wrapper)
+        function searchTable() {
+            filterTable();
+        }
+
+        // Real-Time Polling
+        async function fetchUpdates() {
+            // Find last ID dynamically from the DOM
+            const rows = document.querySelectorAll('tr[data-id]');
+            if (rows.length > 0) {
+                lastId = rows[0].getAttribute('data-id'); // First row is newest
+            }
+
+            try {
+                const url = `/api/updates?last_id=${lastId || ''}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.new_items && data.new_items.length > 0) {
+                    const tbody = document.querySelector('table.table tbody');
+
+                    // Append items (prepend because we sort desc)
+                    data.new_items.forEach(item => {
+                        // Avoid duplicates just in case
+                        if (document.querySelector(`tr[data-id="${item._id}"]`)) return;
+
+                        const tr = document.createElement('tr');
+                        tr.setAttribute('data-id', item._id);
+
+                        // Build Row HTML
+                        const status = item.status || 'pending';
+
+                        // Add status class to row
+                        tr.classList.add(`row-${status}`);
+
+                        // Safe fallbacks and Links
+                        const addressLink = item.address
+                            ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}" target="_blank" class="address-link">${item.address}</a>`
+                            : '<span class="text-muted">None</span>';
+
+                        const phoneDisplay = item.phone || '<span class="text-muted">None</span>';
+
+                        // Parse Emails (comma separated -> stacked)
+                        let emailDisplay = '<span class="text-muted">None</span>';
+                        if (item.email) {
+                            emailDisplay = item.email.split(',')
+                                .map(e => `<span class="email-item" title="${e.trim()}">${e.trim()}</span>`)
+                                .join('');
+                        }
+                        const categoryDisplay = item.category || '<span class="text-muted">-</span>';
+                        const hasNote = item.note && (item.note.text || item.note.image);
+
+                        tr.innerHTML = `
+                                <td class="text-center"><input type="checkbox" class="select-checkbox" data-id="${item._id}"></td>
+                                <td class="col-category">${categoryDisplay}</td>
+                                <td class="col-name">${item.name}</td>
+                                <td class="col-address">${addressLink}</td>
+                                <td>${phoneDisplay}</td>
+                                <td class="col-email">${emailDisplay}</td>
+                                <td class="text-center">
+                                    ${item.website ? `<a href="${item.website}" target="_blank" class="website-link">Visit <i class="bi bi-box-arrow-up-right"></i></a>` : '<span class="text-muted">None</span>'}
+                                </td>
+                                <td class="text-center">
+                                    <select class="status-select status-${status}" onchange="updateStatus('${item._id}', this.value); this.className='status-select status-'+this.value;">
+                                        <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                                        <option value="in_progress" ${status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                        <option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option>
+                                        <option value="rejected" ${status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                    </select>
+                                </td>
+                                <td class="text-center">
+                                    ${item.analysis && item.analysis.status === 'completed'
+                                ? `<button class="btn btn-sm btn-notes" onclick="showNotes('${item._id}')">Results <i class="bi bi-file-text"></i></button>`
+                                : `<button class="btn btn-sm btn-analysis" onclick="runAnalysis('${item._id}')">Analysis <i class="bi bi-graph-up"></i></button>`
+                            }
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm ${hasNote ? 'btn-view-note' : 'btn-add-note'}" onclick="openNotesModal('${item._id}')">
+                                        ${hasNote ? 'View Note <i class="bi bi-eye"></i>' : 'Add Note <i class="bi bi-plus"></i>'}
+                                    </button>
+                                </td>
+                            `;
+
+                        // Prepend to top
+                        tbody.insertBefore(tr, tbody.firstChild);
+                    });
+
+                    // Update Count
+                    const countEl = document.querySelector('.card-header .text-muted');
+                    if (countEl) countEl.textContent = `${document.querySelectorAll('tr[data-id]').length} places found`;
+                }
+            } catch (error) {
+                console.error('Polling error:', error);
+            }
+        }
+
+        // Poll every 2 seconds
+        setInterval(fetchUpdates, 2000);
+    </script>
+</head>
+
+<body>
+    <div id="overlay" class="overlay">
+        <div class="spinner-border" role="status"></div>
+        <div class="loading-text">Scraping data from Google Maps...<br>This may take a few seconds.</div>
+    </div>
+
+    <!-- Notes Modal -->
+    <div id="notesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add/Edit Note</h2>
+                <span class="close" onclick="closeNotesModal()">&times;</span>
+            </div>
+            <div class="notes-modal-body">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Note Text:</label>
+                <textarea id="notesText" class="notes-textarea" placeholder="Write your note here..."></textarea>
+
+                <label style="display: block; margin: 16px 0 8px 0; font-weight: 500; color: #374151;">Attach Image
+                    (optional):</label>
+                <input type="file" id="notesImageInput" accept="image/*" onchange="previewNotesImage()"
+                    style="margin-bottom: 12px;">
+                <img id="notesImagePreview" class="notes-image-preview" style="display: none;">
+
+                <div style="margin-top: 24px; text-align: right;">
+                    <button class="btn-save-note" onclick="saveNote()">Save Note</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Modal -->
+    <div id="analysisModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Website Analysis - <span id="modalBusinessName"></span></h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="analysisResults">
+                <!-- Dynamic content loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand me-4" href="/">
+                <img src="/static/images/logo.png" alt="Karki's Logo">
+                Karki's Scraper
+            </a>
+
+            <!-- Centered Search in Navbar with Modern Look -->
+            <form action="{{ url_for('main.scrape') }}" method="post" class="navbar-search mx-auto"
+                onsubmit="startScrape()">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" name="query" class="form-control" placeholder="Search keywords..." required
+                    autocomplete="off">
+            </form>
+
+            <div class="ms-auto ms-4">
+                <a href="{{ url_for('main.download_excel') }}" class="btn btn-outline-success btn-download">
+                    <i class="bi bi-file-earmark-excel"></i> Export
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        <div class="data-card mt-4">
+            <div class="card-header" style="display: flex; align-items: center; gap: 20px;">
+                <div style="min-width: 200px;">
+                    <div class="card-title">Recent Results</div>
+                    <span class="text-muted">{{ places|length }} places found</span>
+                </div>
+                <div class="table-search-container"
+                    style="display: flex; gap: 10px; align-items: center; flex-grow: 1;">
+                    <div style="position: relative; flex-grow: 1;">
+                        <i class="bi bi-search"
+                            style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #6b7280;"></i>
+                        <input type="text" id="tableSearch" class="table-search-input" placeholder="Search name..."
+                            onkeyup="filterTable()" autocomplete="off"
+                            style="padding-left: 30px; width: 100%; min-width: 250px;">
+                    </div>
+                </div>
+                <div style="min-width: 200px; display: flex; justify-content: flex-end;">
+                    <button onclick="deleteSelected()" class="btn"
+                        style="background-color: #ef4444; color: white; height: 45px; padding: 0 20px; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;"
+                        onmouseover="this.style.backgroundColor='#dc2626'"
+                        onmouseout="this.style.backgroundColor='#ef4444'">
+                        <i class="bi bi-trash" style="font-size: 1.2rem;"></i>
+                        <span style="font-size: 1.1rem;">Delete</span>
+                    </button>
+                </div>
+            </div>
+            <div class="filter-row"
+                style="padding: 10px 20px; border-bottom: 1px solid var(--border-color); background: #fafafa; display: flex; gap: 15px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-funnel text-muted"></i>
+                    <span style="font-size: 0.9rem; font-weight: 500; color: #666;">Filters:</span>
+                </div>
+                <select id="categoryFilter" class="form-select form-select-sm" onchange="filterTable()"
+                    style="width: 180px; border-radius: 20px; border: 1px solid #ddd;">
+                    <option value="">All Categories</option>
+                </select>
+                <select id="cityFilter" class="form-select form-select-sm" onchange="filterTable()"
+                    style="width: 180px; border-radius: 20px; border: 1px solid #ddd;">
+                    <option value="">All Locations</option>
+                </select>
+
+                <div style="margin-left: auto;">
+                    <div class="page-jumper">
+                        <span class="page-jumper-label">Go to Page</span>
+                        <select class="page-jumper-select" onchange="window.location.href='/?page='+this.value">
+                            {% for p in range(1, pagination.total_pages + 1) %}
+                            <option value="{{ p }}" {% if p==pagination.current_page %}selected{% endif %}>{{ p }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 50px;">
+                                <i class="bi bi-check2-square"
+                                    style="font-size: 1.2rem; color: var(--primary-color);"></i>
+                            </th>
+                            <th>Category</th>
+                            <th>Business Name</th>
+                            <th>Address</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th class="text-center">Website</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Analysis</th>
+                            <th class="text-center">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for place in places %}
+                        <tr data-id="{{ place._id }}" class="row-{{ place.status|default('pending') }}">
+                            <td class="text-center"><input type="checkbox" class="select-checkbox"
+                                    data-id="{{ place._id }}"></td>
+                            <td class="col-category">{{ place.category or '-' }}</td>
+                            <td class="col-name">{{ place.name }}</td>
+                            <td class="col-address">
+                                {% if place.address %}
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ place.address | urlencode }}"
+                                    target="_blank" class="address-link">{{ place.address }}</a>
+                                {% else %}
+                                <span class="text-muted">None</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ place.phone or 'None' }}</td>
+                            <td class="col-email">
+                                {% if place.email %}
+                                {% for email in place.email.split(',') %}
+                                <span class="email-item" title="{{ email.strip() }}">{{ email.strip() }}</span>
+                                {% endfor %}
+                                {% else %}
+                                <span class="text-muted">None</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">{% if place.website %}<a href="{{ place.website }}" target="_blank"
+                                    class="website-link">Visit <i class="bi bi-box-arrow-up-right"></i></a>{% else
+                                %}<span class="text-muted">None</span>{% endif %}</td>
+                            <td class="text-center">
+                                <select class="status-select status-{{ place.status|default('pending') }}"
+                                    onchange="updateStatus('{{ place._id }}', this.value); this.className='status-select status-'+this.value;">
+                                    <option value="pending" {% if place.status=='pending' or not place.status
+                                        %}selected{% endif %}>Pending</option>
+                                    <option value="in_progress" {% if place.status=='in_progress' %}selected{% endif %}>
+                                        In Progress</option>
+                                    <option value="approved" {% if place.status=='approved' %}selected{% endif %}>
+                                        Approved</option>
+                                    <option value="rejected" {% if place.status=='rejected' %}selected{% endif %}>
+                                        Rejected</option>
+                                </select>
+                            </td>
+                            <td class="text-center">
+                                {% if place.analysis and place.analysis.status == 'completed' %}
+                                <button class="btn btn-sm btn-notes" onclick="showNotes('{{ place._id }}')">
+                                    Results <i class="bi bi-file-text"></i>
+                                </button>
+                                {% else %}
+                                <button class="btn btn-sm btn-analysis" onclick="runAnalysis('{{ place._id }}')">
+                                    Analysis <i class="bi bi-graph-up"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% set has_note = place.note and (place.note.text or place.note.image) %}
+                                <button
+                                    class="btn btn-sm {% if has_note %}btn-view-note{% else %}btn-add-note{% endif %}"
+                                    onclick="openNotesModal('{{ place._id }}')">
+                                    {% if has_note %}View Note <i class="bi bi-eye"></i>{% else %}Add Note <i
+                                        class="bi bi-plus"></i>{% endif %}
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if pagination and pagination.total_pages > 1 %}
+            <nav aria-label="Page navigation" class="p-3 border-top">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="text-muted small">
+                        Showing {{ (pagination.current_page - 1) * pagination.per_page + 1 }} to {{
+                        ((pagination.current_page * pagination.per_page), pagination.total_items)|min }} of {{
+                        pagination.total_items }} entries
+                    </div>
+                    <ul class="pagination mb-0 justify-content-center">
+                        <!-- First -->
+                        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                            <a class="page-link"
+                                href="{{ url_for('main.index', page=1, per_page=pagination.per_page) }}">&laquo;</a>
+                        </li>
+                        <!-- Prev -->
+                        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                            <a class="page-link"
+                                href="{{ url_for('main.index', page=pagination.prev_page, per_page=pagination.per_page) }}">Prev</a>
+                        </li>
+
+                        <!-- Numbers -->
+                        {% for p in pagination.display_pages %}
+                        {% if p is none %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% else %}
+                        <li class="page-item {% if p == pagination.current_page %}active{% endif %}">
+                            <a class="page-link"
+                                href="{{ url_for('main.index', page=p, per_page=pagination.per_page) }}">{{ p }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        <!-- Next -->
+                        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                            <a class="page-link"
+                                href="{{ url_for('main.index', page=pagination.next_page, per_page=pagination.per_page) }}">Next</a>
+                        </li>
+                        <!-- Last -->
+                        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                            <a class="page-link"
+                                href="{{ url_for('main.index', page=pagination.total_pages, per_page=pagination.per_page) }}">&raquo;</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='delete.js') }}"></script>
+</body>
+
+</html>
