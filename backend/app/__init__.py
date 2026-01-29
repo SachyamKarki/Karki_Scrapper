@@ -22,11 +22,22 @@ def create_app():
     cors_val = os.getenv('CORS_ORIGINS', '*')
     if cors_val == '*':
         # Use regex to allow all origins while supporting credentials (reflects request origin)
-        _cors_origins_list = [r".*"]
+        # Using a true regex string that flask-cors understands
+        _cors_origins_list = [r"https?://.*"] 
     else:
         _cors_origins_list = [o.strip() for o in str(cors_val).split(',') if o and o.strip()]
     
-    CORS(app, resources={r"/*": {"origins": _cors_origins_list}}, supports_credentials=True)
+    # Add common origins if not present to ensure local/Vercel work
+    if "http://localhost:5173" not in _cors_origins_list and cors_val != '*':
+        _cors_origins_list.append("http://localhost:5173")
+    
+    CORS(app, resources={r"/*": {
+        "origins": _cors_origins_list,
+        "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "expose_headers": ["Content-Type"],
+        "supports_credentials": True
+    }})
 
     # Initialize Flask-Login
     from flask_login import LoginManager
