@@ -90,15 +90,15 @@ const AdminPanel = () => {
             <div style={{ paddingBottom: '40px' }}>
                 <header style={{ marginBottom: '40px' }}>
                     <h1 style={{ fontSize: '1.875rem', fontWeight: 700, color: '#1e293b' }}>
-                        {user.is_superadmin ? 'Admin Portal' : 'Data Moderation'}
+                        {user?.is_superadmin ? 'Admin Portal' : 'Data Moderation'}
                     </h1>
                     <p style={{ color: '#64748b', marginTop: '4px' }}>
-                        {user.is_superadmin ? 'Manage users and platform activity' : 'Review and approve scraped data points'}
+                        {user?.is_superadmin ? 'Manage users and platform activity' : 'Review and approve scraped data points'}
                     </p>
                 </header>
 
                 {/* Stats Grid - Visible to Superadmin */}
-                {user.is_superadmin && stats && (
+                {user?.is_superadmin && stats && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '40px' }}>
                         <div style={{ background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '16px' }}>
                             <div style={{ padding: '12px', background: '#eff6ff', borderRadius: '10px', color: '#2563eb' }}><Users size={24} /></div>
@@ -128,7 +128,7 @@ const AdminPanel = () => {
                 <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)' }}>
                     <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>
-                            {user.is_superadmin ? 'System Users' : 'Pending Review Queue'}
+                            {user?.is_superadmin ? 'System Users' : 'Pending Review Queue'}
                         </h2>
                     </div>
                     
@@ -171,7 +171,7 @@ const AdminPanel = () => {
                                                         background: u.role === 'superadmin' ? '#f3e8ff' : '#fff',
                                                         color: u.role === 'superadmin' ? '#9333ea' : '#1e293b'
                                                     }}
-                                                    disabled={u.email === user.email}
+                                                    disabled={u.email === user?.email}
                                                 >
                                                     <option value="user">User</option>
                                                     <option value="admin">Admin</option>
@@ -181,7 +181,7 @@ const AdminPanel = () => {
                                             <td style={{ padding: '16px 24px' }}>
                                                 <button 
                                                     onClick={() => deleteUser(u._id)}
-                                                    disabled={u.email === user.email}
+                                                    disabled={u.email === user?.email}
                                                     style={{ 
                                                         padding: '8px', 
                                                         color: '#ef4444', 
@@ -189,7 +189,7 @@ const AdminPanel = () => {
                                                         background: '#fee2e2', 
                                                         borderRadius: '6px', 
                                                         cursor: 'pointer',
-                                                        opacity: u.email === user.email ? 0.5 : 1
+                                                        opacity: u.email === user?.email ? 0.5 : 1
                                                     }}
                                                 >
                                                     <Trash2 size={16} />
@@ -198,7 +198,7 @@ const AdminPanel = () => {
                                         </tr>
                                     ))
                                 ) : (
-                                    moderationItems?.length > 0 ? moderationItems.map(item => (
+                                    (moderationItems || []).length > 0 ? (moderationItems || []).map(item => (
                                         <tr key={item._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                             <td style={{ padding: '16px 24px', color: '#334155' }}>
                                                 <div style={{ fontWeight: 600 }}>{item.name}</div>
@@ -210,7 +210,7 @@ const AdminPanel = () => {
                                                     background: item.status === 'pending' ? '#fef3c7' : '#f1f5f9',
                                                     color: item.status === 'pending' ? '#b45309' : '#64748b'
                                                 }}>
-                                                    {item.status.toUpperCase()}
+                                                    {(item.status || 'unknown').toUpperCase()}
                                                 </span>
                                             </td>
                                             <td style={{ padding: '16px 24px' }}>
@@ -224,7 +224,8 @@ const AdminPanel = () => {
                                                 </div>
                                             </td>
                                         </tr>
-                                    )) : (
+                                    ))
+ : (
                                         <tr>
                                             <td colSpan="3" style={{ padding: '32px', textAlign: 'center', color: '#94a3b8', fontStyle: 'italic' }}>
                                                 No items pending review.

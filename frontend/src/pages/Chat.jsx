@@ -161,7 +161,7 @@ const Chat = () => {
                                 No other admins yet
                             </div>
                         ) : (
-                            admins.map((admin) => (
+                            (admins || []).map((admin) => (
                                 <div
                                     key={admin.id}
                                     style={{
@@ -218,8 +218,8 @@ const Chat = () => {
                         </div>
                     ) : (
                         <>
-                            {messages.map((msg, index) => {
-                                const isOwnMessage = msg.sender_email === user.email;
+                            {(messages || []).map((msg, index) => {
+                                const isOwnMessage = msg.sender_email === user?.email;
                                 return (
                                     <div key={msg._id || index} style={{ display: 'flex', justifyContent: isOwnMessage ? 'flex-end' : 'flex-start' }}>
                                         <div style={{ maxWidth: '70%' }}>

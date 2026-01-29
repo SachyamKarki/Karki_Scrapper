@@ -304,7 +304,7 @@ const DirectMessages = () => {
                                     <p style={{ fontSize: '0.875rem' }}>No people to message</p>
                                 </div>
                             ) : (
-                                filteredConversations.map((conv) => (
+                                (filteredConversations || []).map((conv) => (
                                     <div
                                         key={conv.user_id}
                                         onClick={() => openConversation(conv)}

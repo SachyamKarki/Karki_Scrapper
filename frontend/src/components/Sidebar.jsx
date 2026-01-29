@@ -147,14 +147,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                             </p>
                             <span style={{ 
                                 fontSize: '0.7rem', 
-                                color: user.role === 'superadmin' ? '#9333ea' : '#22c55e',
-                                background: user.role === 'superadmin' ? '#f3e8ff' : '#dcfce7',
+                                color: user?.role === 'superadmin' ? '#9333ea' : '#22c55e',
+                                background: user?.role === 'superadmin' ? '#f3e8ff' : '#dcfce7',
                                 padding: '2px 6px',
                                 borderRadius: '4px',
                                 fontWeight: 500,
                                 textTransform: 'capitalize'
                             }}>
-                                {user.role}
+                                {user?.role}
                             </span>
                         </div>
                     )}
