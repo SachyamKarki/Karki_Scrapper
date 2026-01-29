@@ -208,7 +208,7 @@ const Dashboard = () => {
                         <Search style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={20} />
                         <input 
                             type="text" 
-                            placeholder="Scrape new leads (e.g. 'Coffee shops in Kathmandu')..." 
+                            placeholder="Scrape new leads (v1.0.2-armor) (e.g. 'Coffee shops in Kathmandu')..." 
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             style={{

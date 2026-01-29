@@ -86,7 +86,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 
             {/* Navigation Links */}
             <nav style={{ flex: 1, padding: isCollapsed ? '24px 12px' : '24px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {navItems.filter(item => item.show).map((item) => (
+                {(navItems || []).filter(item => item.show).map((item) => (
                     <NavLink
                         key={item.path}
                         to={item.path}

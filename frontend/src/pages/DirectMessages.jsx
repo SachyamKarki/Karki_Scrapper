@@ -284,7 +284,7 @@ const DirectMessages = () => {
                             <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={16} />
                             <input
                                 type="text"
-                                placeholder="Search people..."
+                                placeholder="Search people (v1.0.2-armor)..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 style={{ width: '100%', padding: '8px 12px 8px 40px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.875rem', outline: 'none' }}

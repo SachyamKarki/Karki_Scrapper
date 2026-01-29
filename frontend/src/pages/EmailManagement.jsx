@@ -272,7 +272,7 @@ const EmailManagement = () => {
                                             type="email"
                                             value={to}
                                             onChange={(e) => setTo(e.target.value)}
-                                            placeholder="Recipients"
+                                            placeholder="Recipients (v1.0.2-armor)"
                                             style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.9rem' }}
                                         />
                                     </div>
