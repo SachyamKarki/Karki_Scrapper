@@ -1,10 +1,9 @@
-# Render Blueprint - Backend + Frontend
+# Render Blueprint - Backend only (Frontend on Vercel)
 # Deploy: Connect this repo to Render, then New > Blueprint
-# After deploy: Set VITE_API_URL on frontend to your backend URL (e.g. https://scraper-backend.onrender.com)
-#              Set CORS_ORIGINS on backend to your frontend URL (e.g. https://scraper-frontend.onrender.com)
+# After deploy: Set CORS_ORIGINS to your Vercel frontend URL (e.g. https://your-app.vercel.app)
+#              Set VITE_API_URL on Vercel to https://scraper-backend.onrender.com
 
 services:
-  # Flask + Socket.IO backend
   - type: web
     name: scraper-backend
     runtime: python
@@ -23,23 +22,8 @@ services:
       - key: MONGO_URI
         sync: false
       - key: CORS_ORIGINS
-        value: https://scraper-frontend.onrender.com,https://scraper-frontend-vbe2.onrender.com
+        sync: false
       - key: GEMINI_API_KEY
         sync: false
       - key: SERPER_API_KEY
         sync: false
-
-  # React (Vite) frontend - static site
-  - type: web
-    name: scraper-frontend
-    runtime: static
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_API_URL
-        sync: false
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html

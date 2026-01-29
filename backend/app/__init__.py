@@ -29,6 +29,8 @@ def create_app():
             return True
         if origin.endswith('.onrender.com'):
             return True
+        if '.vercel.app' in origin:
+            return True
         if origin.startswith('http://localhost') or origin.startswith('http://127.0.0.1'):
             return True
         return False
