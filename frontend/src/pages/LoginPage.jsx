@@ -23,7 +23,8 @@ const LoginPage = () => {
                 setError(result.message || 'Invalid email or password');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred during login');
+            const msg = err.response?.data?.message || err.message || 'An error occurred during login';
+            setError(msg);
         } finally {
             setLoading(false);
         }

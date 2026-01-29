@@ -53,5 +53,12 @@ def create_app():
     
     # Register WebSocket event handlers
     register_socketio_events(socketio)
-    
+
+    # JSON error handler for API 500s (helps frontend show real error)
+    @app.errorhandler(500)
+    def handle_500(e):
+        from flask import jsonify
+        msg = str(e) if app.debug else 'Internal server error'
+        return jsonify({'success': False, 'message': msg}), 500
+
     return app

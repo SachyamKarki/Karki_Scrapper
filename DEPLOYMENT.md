@@ -74,3 +74,17 @@ Deploy both frontend and backend to Railway as a single app. These platforms sup
 - [ ] `render.yaml` at repo root
 - [ ] All `sync: false` env vars set in Render dashboard after first deploy
 - [ ] Backend health check at `/api/` passes
+
+### Fix "Internal Error" on Login (Render)
+
+1. **MongoDB Atlas Network Access** – Render uses dynamic IPs. In [MongoDB Atlas](https://cloud.mongodb.com) → Network Access → Add IP Address → **Allow Access from Anywhere** (`0.0.0.0/0`). Without this, the backend cannot connect to MongoDB.
+
+2. **Create admin in production** – The admin you created locally is in your local MongoDB. For Render, use the same `MONGO_URI` (production) and run:
+   ```bash
+   cd backend && python scripts/create_admin.py admin@yourdomain.com YourPassword
+   ```
+   Ensure `MONGO_URI` in `.env` points to your production MongoDB before running.
+
+3. **CORS_ORIGINS** – Must exactly match your frontend URL (e.g. `https://scraper-frontend.onrender.com`), no trailing slash.
+
+4. **VITE_API_URL** – Must exactly match your backend URL (e.g. `https://scraper-backend.onrender.com`). Redeploy frontend after setting.
