@@ -18,24 +18,24 @@ def create_app():
         app.config['SESSION_COOKIE_SAMESITE'] = 'None'
         app.config['SESSION_COOKIE_SECURE'] = True
     
+    import re
     # CORS configuration
     cors_val = os.getenv('CORS_ORIGINS', '*')
     if cors_val == '*':
         # Use regex to allow all origins while supporting credentials
-        _cors_origins_list = [r"https?://.*"] 
+        _cors_origins_list = [re.compile(r"https?://.*")] 
     else:
         _cors_origins_list = [o.strip() for o in str(cors_val).split(',') if o and o.strip()]
     
     # Nuclear CORS: Always allow Vercel and Localhost for robustness
-    if r"https?://.*\.vercel\.app" not in _cors_origins_list:
-        _cors_origins_list.append(r"https?://.*\.vercel\.app")
-    if "http://localhost:5173" not in _cors_origins_list:
-        _cors_origins_list.append("http://localhost:5173")
+    # Using compiled regex objects ensures flask-cors treats them as patterns
+    _cors_origins_list.append(re.compile(r"https?://.*\.vercel\.app"))
+    _cors_origins_list.append(re.compile(r"https?://localhost:\d+"))
     
     CORS(app, resources={r"/*": {
         "origins": _cors_origins_list,
         "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
         "expose_headers": ["Content-Type"],
         "supports_credentials": True
     }})
