@@ -85,6 +85,11 @@ Deploy both frontend and backend to Railway as a single app. These platforms sup
    ```
    Ensure `MONGO_URI` in `.env` points to your production MongoDB before running.
 
-3. **CORS_ORIGINS** – Must exactly match your frontend URL (e.g. `https://scraper-frontend.onrender.com`), no trailing slash.
+3. **CORS_ORIGINS** – Must include your frontend URL(s). Add **both** if you have main + preview:
+   - `https://scraper-frontend.onrender.com,https://scraper-frontend-vbe2.onrender.com`
+   - No trailing slash. Backend also allows any `*.onrender.com` for preview deploys.
 
-4. **VITE_API_URL** – Must exactly match your backend URL (e.g. `https://scraper-backend.onrender.com`). Redeploy frontend after setting.
+4. **VITE_API_URL** – **CRITICAL: Set to your BACKEND URL, not frontend!**
+   - ✅ Correct: `https://scraper-backend.onrender.com`
+   - ❌ Wrong: `https://scraper-frontend.onrender.com` (that's the frontend – API calls will fail)
+   - Redeploy frontend after setting.
