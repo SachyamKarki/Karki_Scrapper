@@ -22,11 +22,21 @@ def create_app():
     cors_val = os.getenv('CORS_ORIGINS', '*')
     _cors_origins_list = [o.strip() for o in str(cors_val).split(',') if o and o.strip()] if cors_val and str(cors_val).strip() != '*' else []
     
+    def _is_origin_allowed(origin):
+        if not origin:
+            return False
+        if origin in _cors_origins_list:
+            return True
+        # Allow Render preview URLs (*.onrender.com) when CORS_ORIGINS is set
+        if origin.endswith('.onrender.com'):
+            return True
+        return False
+
     @app.after_request
     def _add_cors_headers(response):
         origin = request.headers.get('Origin')
         if _cors_origins_list:
-            if origin and origin in _cors_origins_list:
+            if _is_origin_allowed(origin):
                 response.headers['Access-Control-Allow-Origin'] = origin
                 response.headers['Access-Control-Allow-Credentials'] = 'true'
         elif origin:
@@ -70,6 +80,7 @@ def create_app():
     app.register_blueprint(messages, url_prefix='/messages')
     
     # Initialize SocketIO - eventlet for WebSocket support on Render
+    # Socket.IO needs explicit list; use CORS_ORIGINS + allow *.onrender.com for preview URLs
     socketio_origins = _cors_origins_list if _cors_origins_list else '*'
     socketio.init_app(app, cors_allowed_origins=socketio_origins, async_mode='eventlet')
     
