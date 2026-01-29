@@ -186,7 +186,7 @@ const DirectMessages = () => {
         return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    const filteredConversations = conversations.filter(conv =>
+    const filteredConversations = (conversations || []).filter(conv =>
         conv.user_email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -247,10 +247,10 @@ const DirectMessages = () => {
                                     }}>
                                         {loadingAdmins ? (
                                             <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}><Loader2 className="animate-spin" size={24} color="#4338ca" /></div>
-                                        ) : admins.filter(a => !a.is_you).length === 0 ? (
+                                        ) : (admins || []).filter(a => !a.is_you).length === 0 ? (
                                             <div style={{ padding: '20px', color: '#64748b', fontSize: '0.875rem', textAlign: 'center' }}>No other admins or superadmins</div>
                                         ) : (
-                                            admins.filter(a => !a.is_you).map((admin) => (
+                                            (admins || []).filter(a => !a.is_you).map((admin) => (
                                                 <div
                                                     key={admin.id}
                                                     onClick={() => { startNewConversation(admin.id, admin.email || 'Unknown', admin.role || 'user'); setShowAdminDropdown(false); }}
@@ -494,7 +494,7 @@ const DirectMessages = () => {
                                         {conversations.length === 0 ? (
                                             <div style={{ padding: '24px', color: '#64748b', fontSize: '0.875rem', textAlign: 'center' }}>No recipients available</div>
                                         ) : (
-                                            conversations.map((conv) => (
+                                            (conversations || []).map((conv) => (
                                                 <div
                                                     key={conv.user_id}
                                                     onClick={() => { startNewConversation(conv.user_id, conv.user_email || 'Unknown', conv.user_role || 'user'); setShowRecipientDropdown(false); }}

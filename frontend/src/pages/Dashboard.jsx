@@ -50,8 +50,8 @@ const Dashboard = () => {
             const response = await axios.get(`/api/?${params.toString()}`, {
                 headers: { 'Accept': 'application/json' }
             });
-            setPlaces(response.data.places);
-            setPagination(response.data.pagination);
+            setPlaces(response.data.places || []);
+            setPagination(response.data.pagination || null);
             setPage(targetPage);
             
             // Clear selection on page change or filter
@@ -94,7 +94,7 @@ const Dashboard = () => {
                 status: newStatus 
             });
             if (response.data.success) {
-                setPlaces(places.map(p => p._id === id ? { ...p, status: newStatus } : p));
+                setPlaces(prev => (prev || []).map(p => p._id === id ? { ...p, status: newStatus } : p));
             }
         } catch (error) {
             console.error('Failed to update status');
@@ -136,8 +136,8 @@ const Dashboard = () => {
         window.location.href = '/api/download_excel';
     };
     
-    const pendingIds = places.filter(p => (p.status || 'pending') === 'pending').map(p => p._id);
-    const pendingSelectedCount = Array.from(selectedItems).filter(id => pendingIds.includes(id)).length;
+    const pendingIds = (places || []).filter(p => (p.status || 'pending') === 'pending').map(p => p._id);
+    const pendingSelectedCount = Array.from(selectedItems || []).filter(id => pendingIds.includes(id)).length;
 
     const toggleSelection = (id, isPending) => {
         if (!isPending) return;
@@ -158,7 +158,7 @@ const Dashboard = () => {
     };
 
     const deleteSelected = async () => {
-        const idsToDelete = Array.from(selectedItems).filter(id => pendingIds.includes(id));
+        const idsToDelete = Array.from(selectedItems || []).filter(id => pendingIds.includes(id));
         if (idsToDelete.length === 0) return;
         if (!confirm(`Are you sure you want to delete ${idsToDelete.length} pending item(s)?`)) return;
 
@@ -349,7 +349,7 @@ const Dashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {places.map(place => {
+                                    {(places || []).map(place => {
                                         const statusColor = getStatusColor(place.status || 'pending');
                                         const socialLinks = getSocialMediaLinks(place);
                                         const isSearchMatch = searchText.trim() && place.name.toLowerCase().includes(searchText.toLowerCase());

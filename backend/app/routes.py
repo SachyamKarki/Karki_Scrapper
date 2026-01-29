@@ -24,8 +24,15 @@ def render_dashboard(places, title="Dashboard", show_join=False, is_scrappy=Fals
 @main.route('/')
 @login_required
 def index():
-    # Redirect administrative roles to the panel (only if NOT an API call)
-    if current_user.is_admin and not request.accept_mimetypes.accept_json:
+    # Redirect administrative roles to the panel IF they are landing on root directly via browser
+    # We check if it's NOT an API call (no application/json in Accept or request is not JSON)
+    is_api_request = (
+        request.is_json or 
+        'application/json' in request.headers.get('Accept', '') or
+        request.args.get('format') == 'json'
+    )
+    
+    if current_user.is_admin and not is_api_request:
         return redirect(url_for('admin.dashboard'))
         
     page = int(request.args.get('page', 1))

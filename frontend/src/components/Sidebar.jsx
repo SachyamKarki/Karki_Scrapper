@@ -138,7 +138,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                         fontSize: '0.9rem',
                         flexShrink: 0
                     }}>
-                        {user.email[0].toUpperCase()}
+                        {user?.email?.[0]?.toUpperCase() || '?'}
                     </div>
                     {!isCollapsed && (
                         <div style={{ overflow: 'hidden' }}>

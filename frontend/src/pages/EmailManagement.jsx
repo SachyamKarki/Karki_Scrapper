@@ -245,7 +245,7 @@ const EmailManagement = () => {
                                             boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
                                             zIndex: 50
                                         }}>
-                                            {places.filter((p) => p.email).slice(0, 50).map((place) => (
+                                            {(places || []).filter((p) => p.email).slice(0, 50).map((place) => (
                                                 <div
                                                     key={place._id}
                                                     onClick={() => selectLead(place)}
@@ -459,11 +459,7 @@ const EmailManagement = () => {
                                 />
                             </div>
                             <div style={{ flex: 1, overflowY: 'auto' }}>
-                                {loadingSent ? (
-                                    <div style={{ padding: '40px', textAlign: 'center' }}>
-                                        <Loader2 className="animate-spin" size={32} color="#2563eb" />
-                                    </div>
-                                ) : sentEmails.length === 0 ? (
+                                {sentEmails.length === 0 ? (
                                     <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
                                         No sent emails yet
                                     </div>

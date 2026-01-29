@@ -11,7 +11,12 @@ def dashboard():
     if not current_user.is_admin:
         abort(403) # Forbidden
     
-    data = {}
+    data = {
+        'users': [],
+        'stats': {},
+        'moderation_items': []
+    }
+    
     if current_user.is_superadmin:
         # Superadmin: User Management + Stats
         users_collection = get_users_collection()
