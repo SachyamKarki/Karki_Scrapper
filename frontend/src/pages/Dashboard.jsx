@@ -352,7 +352,7 @@ const Dashboard = () => {
                                     {(places || []).map(place => {
                                         const statusColor = getStatusColor(place.status || 'pending');
                                         const socialLinks = getSocialMediaLinks(place);
-                                        const isSearchMatch = searchText.trim() && place.name.toLowerCase().includes(searchText.toLowerCase());
+                                        const isSearchMatch = searchText.trim() && (place.name || '').toLowerCase().includes(searchText.toLowerCase());
                                         
                                         return (
                                             <tr key={place._id} style={{ 

@@ -245,7 +245,7 @@ const EmailManagement = () => {
                                             boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
                                             zIndex: 50
                                         }}>
-                                            {(places || []).filter((p) => p.email).slice(0, 50).map((place) => (
+                                            {(safeArray(places)).filter((p) => p.email).slice(0, 50).map((place) => (
                                                 <div
                                                     key={place._id}
                                                     onClick={() => selectLead(place)}
@@ -464,7 +464,7 @@ const EmailManagement = () => {
                                         No sent emails yet
                                     </div>
                                 ) : (
-                                    sentEmails.map((email) => (
+                                    (sentEmails || []).map((email) => (
                                         <div
                                             key={email._id}
                                             onClick={() => setSelectedEmail(email)}

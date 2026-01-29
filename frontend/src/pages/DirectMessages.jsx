@@ -370,7 +370,7 @@ const DirectMessages = () => {
                                     </div>
                                 ) : (
                                     <>
-                                        {messages.map((msg, index) => {
+                                        {(messages || []).map((msg, index) => {
                                             const isOwnMessage = msg.sender_email === user?.email || msg.sender_id === user?.id;
                                             return (
                                                 <div key={msg._id || index} style={{ display: 'flex', justifyContent: isOwnMessage ? 'flex-end' : 'flex-start' }}>
