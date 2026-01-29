@@ -120,6 +120,20 @@ Edit `config.py` or `google_maps_scraper/settings.py` to configure:
 }
 ```
 
+## Production Deployment
+
+1. **Set environment variables** (see `.env.example`):
+   - `FLASK_ENV=production` or `ENV=production`
+   - `SECRET_KEY` (required) – generate with: `python3 -c "import secrets; print(secrets.token_hex(32))"`
+   - `MONGO_URI` – your production MongoDB connection string
+   - `CORS_ORIGINS` – your frontend URL(s), comma-separated (e.g. `https://app.example.com`)
+
+2. **Never commit** `.env` – it contains secrets. Use `.env.example` as a template.
+
+3. **Frontend**: Set `VITE_API_URL` when building if the backend is on a different domain.
+
+4. **Rotate API keys** (GEMINI_API_KEY, SERPER_API_KEY) if they were ever exposed.
+
 ## Notes
 
 - This is a standalone scraper project (no n8n integration)

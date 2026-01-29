@@ -1,4 +1,9 @@
+# Secrets - never commit
 .env
+.env.local
+.env.*.local
+*.pem
+
 venv/
 __pycache__/
 *.pyc
