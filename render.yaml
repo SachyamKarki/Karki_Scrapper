@@ -23,7 +23,7 @@ services:
       - key: MONGO_URI
         sync: false
       - key: CORS_ORIGINS
-        value: https://scraper-frontend.onrender.com
+        value: https://scraper-frontend.onrender.com,https://scraper-frontend-vbe2.onrender.com
       - key: GEMINI_API_KEY
         sync: false
       - key: SERPER_API_KEY

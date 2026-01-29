@@ -75,6 +75,26 @@ Deploy both frontend and backend to Railway as a single app. These platforms sup
 - [ ] All `sync: false` env vars set in Render dashboard after first deploy
 - [ ] Backend health check at `/api/` passes
 
+### Render Environment Variables (env)
+
+**Backend** (scraper-backend) – Render Dashboard → Backend service → Environment:
+
+| Variable | Required | Value |
+|----------|----------|-------|
+| `FLASK_ENV` | ✅ (in yaml) | `production` |
+| `PORT` | ✅ (in yaml) | `10000` |
+| `SECRET_KEY` | ✅ | Random secret: `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `MONGO_URI` | ✅ | MongoDB Atlas connection string |
+| `CORS_ORIGINS` | ✅ (in yaml) | `https://scraper-frontend.onrender.com,https://scraper-frontend-vbe2.onrender.com` |
+| `GEMINI_API_KEY` | Optional | For AI analysis |
+| `SERPER_API_KEY` | Optional | For Google rankings |
+
+**Frontend** (scraper-frontend):
+
+| Variable | Required | Value |
+|----------|----------|-------|
+| `VITE_API_URL` | ✅ | `https://scraper-backend.onrender.com` (your backend URL) |
+
 ### Fix "Internal Error" on Login (Render)
 
 1. **MongoDB Atlas Network Access** – Render uses dynamic IPs. In [MongoDB Atlas](https://cloud.mongodb.com) → Network Access → Add IP Address → **Allow Access from Anywhere** (`0.0.0.0/0`). Without this, the backend cannot connect to MongoDB.
