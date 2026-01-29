@@ -87,7 +87,7 @@ Deploy both frontend and backend to Railway as a single app. These platforms sup
 
 3. **CORS_ORIGINS** – Must include your frontend URL(s). Add **both** if you have main + preview:
    - `https://scraper-frontend.onrender.com,https://scraper-frontend-vbe2.onrender.com`
-   - No trailing slash. Backend also allows any `*.onrender.com` for preview deploys.
+   - No trailing slash. Comma-separated list.
 
 4. **VITE_API_URL** – **CRITICAL: Set to your BACKEND URL, not frontend!**
    - ✅ Correct: `https://scraper-backend.onrender.com`

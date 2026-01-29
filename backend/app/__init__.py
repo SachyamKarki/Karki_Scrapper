@@ -19,22 +19,10 @@ def create_app():
         app.config['SESSION_COOKIE_SECURE'] = True
     
     # CORS for cross-origin (frontend on different domain)
-    # Supports: exact CORS_ORIGINS list + Render preview URLs (*.onrender.com)
+    # CORS_ORIGINS: comma-separated list, e.g. https://scraper-frontend.onrender.com,https://scraper-frontend-vbe2.onrender.com
     cors_val = os.getenv('CORS_ORIGINS', '*')
-    if cors_val == '*':
-        CORS(app, origins='*', supports_credentials=True)
-    else:
-        allowed_list = [o.strip() for o in cors_val.split(',') if o.strip()]
-        def _cors_origins(origin):
-            if not origin:
-                return False
-            if origin in allowed_list:
-                return True
-            # Allow Render preview URLs (scraper-frontend-xxx.onrender.com)
-            if origin.endswith('.onrender.com'):
-                return True
-            return False
-        CORS(app, origins=_cors_origins, supports_credentials=True)
+    origins = [o.strip() for o in cors_val.split(',') if o.strip()] if cors_val and cors_val != '*' else '*'
+    CORS(app, origins=origins, supports_credentials=True)
 
     # Initialize Flask-Login
     from flask_login import LoginManager
@@ -61,11 +49,8 @@ def create_app():
     
     # Initialize SocketIO - eventlet for WebSocket support on Render
     cors_val = os.getenv('CORS_ORIGINS', '*')
-    if cors_val == '*':
-        socketio.init_app(app, cors_allowed_origins='*', async_mode='eventlet')
-    else:
-        allowed_list = [o.strip() for o in cors_val.split(',') if o.strip()]
-        socketio.init_app(app, cors_allowed_origins=allowed_list, async_mode='eventlet')
+    socketio_origins = [o.strip() for o in cors_val.split(',') if o.strip()] if cors_val and cors_val != '*' else '*'
+    socketio.init_app(app, cors_allowed_origins=socketio_origins, async_mode='eventlet')
     
     # Register WebSocket event handlers
     register_socketio_events(socketio)
