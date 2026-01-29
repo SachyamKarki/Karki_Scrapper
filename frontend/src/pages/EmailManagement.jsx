@@ -459,7 +459,7 @@ const EmailManagement = () => {
                                 />
                             </div>
                             <div style={{ flex: 1, overflowY: 'auto' }}>
-                                {sentEmails.length === 0 ? (
+                                {(sentEmails || []).length === 0 ? (
                                     <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
                                         No sent emails yet
                                     </div>

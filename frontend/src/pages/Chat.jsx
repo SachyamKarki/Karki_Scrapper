@@ -156,7 +156,7 @@ const Chat = () => {
                             <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}>
                                 <Loader2 className="animate-spin" size={24} color="#2563eb" />
                             </div>
-                        ) : admins.length === 0 ? (
+                        ) : (admins || []).length === 0 ? (
                             <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: '0.875rem' }}>
                                 No other admins yet
                             </div>
@@ -210,7 +210,7 @@ const Chat = () => {
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             <Loader2 className="animate-spin" size={40} color="#2563eb" />
                         </div>
-                    ) : messages.length === 0 ? (
+                    ) : (messages || []).length === 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#94a3b8' }}>
                             <MessageSquare size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
                             <p style={{ fontSize: '1.125rem', fontWeight: 500 }}>No messages yet</p>

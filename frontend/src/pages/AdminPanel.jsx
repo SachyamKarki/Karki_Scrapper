@@ -153,7 +153,7 @@ const AdminPanel = () => {
                             </thead>
                             <tbody>
                                 {user.is_superadmin ? (
-                                    users?.map(u => (
+                                    (users || []).map(u => (
                                         <tr key={u._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                             <td style={{ padding: '16px 24px', color: '#334155' }}>
                                                 <div style={{ fontWeight: 500, wordBreak: 'break-all' }}>{u.email}</div>

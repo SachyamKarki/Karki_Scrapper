@@ -143,7 +143,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                     {!isCollapsed && (
                         <div style={{ overflow: 'hidden' }}>
                             <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {user.email.split('@')[0]}
+                                {user?.email?.split('@')[0] || 'User'}
                             </p>
                             <span style={{ 
                                 fontSize: '0.7rem', 

@@ -298,7 +298,7 @@ const DirectMessages = () => {
                                 <div style={{ padding: '40px', display: 'flex', justifyContent: 'center' }}>
                                     <Loader2 className="animate-spin" size={32} color="#2563eb" />
                                 </div>
-                            ) : filteredConversations.length === 0 ? (
+                            ) : (filteredConversations || []).length === 0 ? (
                                 <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
                                     <Mail size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
                                     <p style={{ fontSize: '0.875rem' }}>No people to message</p>
@@ -491,7 +491,7 @@ const DirectMessages = () => {
                                         zIndex: 50, minWidth: '320px', maxHeight: '320px', overflowY: 'auto',
                                         padding: '8px'
                                     }}>
-                                        {conversations.length === 0 ? (
+                                        {(conversations || []).length === 0 ? (
                                             <div style={{ padding: '24px', color: '#64748b', fontSize: '0.875rem', textAlign: 'center' }}>No recipients available</div>
                                         ) : (
                                             (conversations || []).map((conv) => (
