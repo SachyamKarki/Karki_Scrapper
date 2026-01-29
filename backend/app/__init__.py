@@ -27,34 +27,35 @@ def create_app():
             return False
         if origin in _cors_origins_list:
             return True
-        # Allow Render preview URLs (*.onrender.com) when CORS_ORIGINS is set
         if origin.endswith('.onrender.com'):
+            return True
+        if origin.startswith('http://localhost') or origin.startswith('http://127.0.0.1'):
             return True
         return False
 
-    @app.after_request
-    def _add_cors_headers(response):
+    def _add_cors_to_response(response):
+        """Add CORS headers - call from both after_request and OPTIONS handler."""
         origin = request.headers.get('Origin')
-        if _cors_origins_list:
-            if _is_origin_allowed(origin):
-                response.headers['Access-Control-Allow-Origin'] = origin
-                response.headers['Access-Control-Allow-Credentials'] = 'true'
-        elif origin:
+        if origin and (_is_origin_allowed(origin) or not _cors_origins_list):
             response.headers['Access-Control-Allow-Origin'] = origin
             response.headers['Access-Control-Allow-Credentials'] = 'true'
-        else:
+        elif not origin:
             response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         response.headers['Access-Control-Expose-Headers'] = 'Content-Type'
         return response
+
+    @app.after_request
+    def _add_cors_headers(response):
+        return _add_cors_to_response(response)
     
     @app.before_request
     def _cors_preflight():
         if request.method == 'OPTIONS':
             from flask import make_response
             resp = make_response('', 204)
-            return resp
+            return _add_cors_to_response(resp)
 
     # Initialize Flask-Login
     from flask_login import LoginManager
