@@ -12,6 +12,11 @@ main = Blueprint('main', __name__)
 # Global to store current session
 CURRENT_BATCH_ID = None
 
+@main.route('/health')
+def health():
+    """Public health check - no auth required (for Render, load balancers)."""
+    return jsonify({'status': 'ok'}), 200
+
 def render_dashboard(places, title="Dashboard", show_join=False, is_scrappy=False, pagination=None):
     # Render the template from file instead of string
     return render_template('dashboard.html', places=places, title=title, show_join=show_join, is_scrappy=is_scrappy, batch_id=CURRENT_BATCH_ID, pagination=pagination, user=current_user)

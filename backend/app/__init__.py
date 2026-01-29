@@ -38,10 +38,10 @@ def create_app():
     def _add_cors_to_response(response):
         """Add CORS headers - call from both after_request and OPTIONS handler."""
         origin = request.headers.get('Origin')
-        if origin and (_is_origin_allowed(origin) or not _cors_origins_list):
+        if origin:
             response.headers['Access-Control-Allow-Origin'] = origin
             response.headers['Access-Control-Allow-Credentials'] = 'true'
-        elif not origin:
+        else:
             response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'

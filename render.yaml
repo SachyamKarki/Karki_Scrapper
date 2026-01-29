@@ -1,7 +1,7 @@
 # Render Blueprint - Backend only (Frontend on Vercel)
 # Deploy: Connect this repo to Render, then New > Blueprint
-# After deploy: Set CORS_ORIGINS to your Vercel frontend URL (e.g. https://your-app.vercel.app)
-#              Set VITE_API_URL on Vercel to https://scraper-backend.onrender.com
+# Set CORS_ORIGINS on Render to your Vercel URL: https://karki-scrappernew.vercel.app
+# Set VITE_API_URL on Vercel to: https://scraper-backend.onrender.com
 
 services:
   - type: web
@@ -11,7 +11,7 @@ services:
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --worker-class eventlet -w 1 wsgi:app
-    healthCheckPath: /api/
+    healthCheckPath: /api/health
     envVars:
       - key: FLASK_ENV
         value: production
@@ -22,7 +22,7 @@ services:
       - key: MONGO_URI
         sync: false
       - key: CORS_ORIGINS
-        sync: false
+        value: https://karki-scrappernew.vercel.app
       - key: GEMINI_API_KEY
         sync: false
       - key: SERPER_API_KEY
