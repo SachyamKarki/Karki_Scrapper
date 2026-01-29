@@ -1,7 +1,6 @@
-from flask import Flask
+from flask import Flask, request
 import os
 from flask_socketio import SocketIO
-from flask_cors import CORS
 from .routes import main
 
 # Initialize SocketIO (will be attached to app in create_app)
@@ -18,11 +17,34 @@ def create_app():
         app.config['SESSION_COOKIE_SAMESITE'] = 'None'
         app.config['SESSION_COOKIE_SECURE'] = True
     
-    # CORS for cross-origin (frontend on different domain)
+    # CORS: manual after_request to avoid flask-cors "function is not iterable" with some configs
     # CORS_ORIGINS: comma-separated list, e.g. https://scraper-frontend.onrender.com,https://scraper-frontend-vbe2.onrender.com
     cors_val = os.getenv('CORS_ORIGINS', '*')
-    origins = [o.strip() for o in cors_val.split(',') if o.strip()] if cors_val and cors_val != '*' else '*'
-    CORS(app, origins=origins, supports_credentials=True)
+    _cors_origins_list = [o.strip() for o in str(cors_val).split(',') if o and o.strip()] if cors_val and str(cors_val).strip() != '*' else []
+    
+    @app.after_request
+    def _add_cors_headers(response):
+        origin = request.headers.get('Origin')
+        if _cors_origins_list:
+            if origin and origin in _cors_origins_list:
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+        elif origin:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        else:
+            response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Access-Control-Expose-Headers'] = 'Content-Type'
+        return response
+    
+    @app.before_request
+    def _cors_preflight():
+        if request.method == 'OPTIONS':
+            from flask import make_response
+            resp = make_response('', 204)
+            return resp
 
     # Initialize Flask-Login
     from flask_login import LoginManager
@@ -48,8 +70,7 @@ def create_app():
     app.register_blueprint(messages, url_prefix='/messages')
     
     # Initialize SocketIO - eventlet for WebSocket support on Render
-    cors_val = os.getenv('CORS_ORIGINS', '*')
-    socketio_origins = [o.strip() for o in cors_val.split(',') if o.strip()] if cors_val and cors_val != '*' else '*'
+    socketio_origins = _cors_origins_list if _cors_origins_list else '*'
     socketio.init_app(app, cors_allowed_origins=socketio_origins, async_mode='eventlet')
     
     # Register WebSocket event handlers
