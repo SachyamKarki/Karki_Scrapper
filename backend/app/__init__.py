@@ -82,10 +82,9 @@ def create_app():
     app.register_blueprint(admin, url_prefix='/admin')
     app.register_blueprint(messages, url_prefix='/messages')
     
-    # Initialize SocketIO - eventlet for WebSocket support on Render
-    # Socket.IO needs explicit list; use CORS_ORIGINS + allow *.onrender.com for preview URLs
+    # Initialize SocketIO - threading (stable on Render, no eventlet/gevent)
     socketio_origins = _cors_origins_list if _cors_origins_list else '*'
-    socketio.init_app(app, cors_allowed_origins=socketio_origins, async_mode='eventlet')
+    socketio.init_app(app, cors_allowed_origins=socketio_origins, async_mode='threading')
     
     # Register WebSocket event handlers
     register_socketio_events(socketio)

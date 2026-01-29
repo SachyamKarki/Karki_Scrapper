@@ -73,6 +73,10 @@ Deploy both to Railway. Supports WebSockets and long-running processes.
 
 **MongoDB connection failed** – Add `0.0.0.0/0` to MongoDB Atlas → Network Access
 
-**CORS / Login fails** – Set `CORS_ORIGINS` on Render to your exact Vercel URL (e.g. `https://scraper-xxx.vercel.app`). Backend allows `*.vercel.app` for preview deploys.
+**CORS / Login fails** – Set `CORS_ORIGINS` on Render to your exact Vercel URL (e.g. `https://karki-scrappernew.vercel.app`)
+
+**Backend slow / timeout** – Render free tier spins down after 15 min. First request may take 30–60s to wake up. Wait and retry.
 
 **Create admin** – Run locally with production MONGO_URI: `cd backend && python scripts/create_admin.py admin@example.com YourPassword`
+
+**Check backend** – Visit `https://scraper-backend.onrender.com/api/health` – should return `{"status":"ok"}` when running
