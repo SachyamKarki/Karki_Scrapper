@@ -21,14 +21,15 @@ def create_app():
     # CORS configuration
     cors_val = os.getenv('CORS_ORIGINS', '*')
     if cors_val == '*':
-        # Use regex to allow all origins while supporting credentials (reflects request origin)
-        # Using a true regex string that flask-cors understands
+        # Use regex to allow all origins while supporting credentials
         _cors_origins_list = [r"https?://.*"] 
     else:
         _cors_origins_list = [o.strip() for o in str(cors_val).split(',') if o and o.strip()]
     
-    # Add common origins if not present to ensure local/Vercel work
-    if "http://localhost:5173" not in _cors_origins_list and cors_val != '*':
+    # Nuclear CORS: Always allow Vercel and Localhost for robustness
+    if r"https?://.*\.vercel\.app" not in _cors_origins_list:
+        _cors_origins_list.append(r"https?://.*\.vercel\.app")
+    if "http://localhost:5173" not in _cors_origins_list:
         _cors_origins_list.append("http://localhost:5173")
     
     CORS(app, resources={r"/*": {
