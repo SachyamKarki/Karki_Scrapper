@@ -11,8 +11,8 @@ class SocketService {
             return this.socket;
         }
 
-        // Use VITE_API_URL if backend is on different origin; otherwise same origin (works with proxy in dev)
-        const url = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+        // Use VITE_API_URL if backend is on different origin; otherwise use the confirmed active backend fallback
+        const url = import.meta.env.VITE_API_URL || 'https://scraper-backend-evss.onrender.com';
         this.socket = io(url, {
             path: '/socket.io',
             transports: ['websocket', 'polling'],

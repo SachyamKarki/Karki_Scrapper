@@ -6,9 +6,8 @@ import ErrorBoundary from './components/ErrorBoundary.jsx'
 import './index.css'
 
 // In production (Vercel), set VITE_API_URL to your backend URL
-if (import.meta.env.VITE_API_URL) {
-  axios.defaults.baseURL = import.meta.env.VITE_API_URL
-}
+const API_URL = import.meta.env.VITE_API_URL || 'https://scraper-backend-evss.onrender.com';
+axios.defaults.baseURL = API_URL;
 axios.defaults.withCredentials = true
 
 ReactDOM.createRoot(document.getElementById('root')).render(
