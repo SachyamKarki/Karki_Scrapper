@@ -6,9 +6,9 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load .env from project root (parent of backend/)
-load_dotenv(Path(__file__).resolve().parent.parent / '.env')
-load_dotenv()  # cwd override
+# Load .env from the directory containing this file
+env_path = Path(__file__).resolve().parent / '.env'
+load_dotenv(env_path)
 
 # Analysis Configuration
 ANALYSIS_TIMEOUT = 10  # seconds for website to respond

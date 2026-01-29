@@ -1,6 +1,7 @@
 from flask import Flask, request
 import os
 from flask_socketio import SocketIO
+from flask_cors import CORS
 from .routes import main
 
 # Initialize SocketIO (will be attached to app in create_app)
@@ -17,47 +18,15 @@ def create_app():
         app.config['SESSION_COOKIE_SAMESITE'] = 'None'
         app.config['SESSION_COOKIE_SECURE'] = True
     
-    # CORS: manual after_request to avoid flask-cors "function is not iterable" with some configs
-    # CORS_ORIGINS: comma-separated list, e.g. https://scraper-frontend.onrender.com,https://scraper-frontend-vbe2.onrender.com
+    # CORS configuration
     cors_val = os.getenv('CORS_ORIGINS', '*')
-    _cors_origins_list = [o.strip() for o in str(cors_val).split(',') if o and o.strip()] if cors_val and str(cors_val).strip() != '*' else []
+    if cors_val == '*':
+        # Use regex to allow all origins while supporting credentials (reflects request origin)
+        _cors_origins_list = [r".*"]
+    else:
+        _cors_origins_list = [o.strip() for o in str(cors_val).split(',') if o and o.strip()]
     
-    def _is_origin_allowed(origin):
-        if not origin:
-            return False
-        if origin in _cors_origins_list:
-            return True
-        if origin.endswith('.onrender.com'):
-            return True
-        if '.vercel.app' in origin:
-            return True
-        if origin.startswith('http://localhost') or origin.startswith('http://127.0.0.1'):
-            return True
-        return False
-
-    def _add_cors_to_response(response):
-        """Add CORS headers - call from both after_request and OPTIONS handler."""
-        origin = request.headers.get('Origin')
-        if origin:
-            response.headers['Access-Control-Allow-Origin'] = origin
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
-        else:
-            response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-        response.headers['Access-Control-Expose-Headers'] = 'Content-Type'
-        return response
-
-    @app.after_request
-    def _add_cors_headers(response):
-        return _add_cors_to_response(response)
-    
-    @app.before_request
-    def _cors_preflight():
-        if request.method == 'OPTIONS':
-            from flask import make_response
-            resp = make_response('', 204)
-            return _add_cors_to_response(resp)
+    CORS(app, resources={r"/*": {"origins": _cors_origins_list}}, supports_credentials=True)
 
     # Initialize Flask-Login
     from flask_login import LoginManager
@@ -83,7 +52,8 @@ def create_app():
     app.register_blueprint(messages, url_prefix='/messages')
     
     # Initialize SocketIO - threading (stable on Render, no eventlet/gevent)
-    socketio_origins = _cors_origins_list if _cors_origins_list else '*'
+    # SocketIO expects '*' or a specific list of origins. If we used regex for CORS, use '*' here.
+    socketio_origins = _cors_origins_list if _cors_origins_list and _cors_origins_list != [r".*"] else '*'
     socketio.init_app(app, cors_allowed_origins=socketio_origins, async_mode='threading')
     
     # Register WebSocket event handlers
