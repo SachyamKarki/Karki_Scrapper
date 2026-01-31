@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { X, Loader2, AlertTriangle, Bug, Zap, TrendingUp, Lightbulb, Search, Flag, Cpu, Briefcase, ShoppingCart, Globe, Mail, FileText } from 'lucide-react';
+import { X, Loader2, AlertTriangle, Bug, Zap, TrendingUp, Lightbulb, Search, Flag, Cpu, Briefcase, ShoppingCart, Globe, Mail, FileText, Shield } from 'lucide-react';
 import ErrorBoundary from './ErrorBoundary';
 
 // Safe helpers to prevent crashes from malformed data
@@ -84,11 +84,13 @@ const AnalysisModal = ({ isOpen, onClose, itemId }) => {
                 }}>
                     <div>
                         <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827', margin: 0 }}>
-                            Website Analysis Report
+                            {analysis?.url_type === 'facebook' ? 'Facebook Page Analysis Report' :
+                             analysis?.url_type === 'instagram' ? 'Instagram Analysis Report' :
+                             'Website Analysis Report'}
                         </h2>
                         {businessName && (
                             <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: '#6b7280' }}>
-                                {businessName} {website && `• ${website}`}
+                                {businessName} {(analysis?.url || website) && `• ${analysis?.url || website}`}
                             </p>
                         )}
                     </div>
@@ -151,8 +153,10 @@ const getAnalysisData = (analysis) => ({
     seoIssues: safeArray(analysis.seo_visibility_issues || analysis.seoVisibilityIssues),
     bugs: safeArray(analysis.bugs_and_glitches || analysis.bugsAndGlitches),
     errors: safeArray(analysis.errors_and_loading_issues || analysis.errorsAndLoadingIssues),
+    developerIssues: safeArray(analysis.developer_technical_issues || analysis.developerTechnicalIssues),
     recs: safeArray(analysis.improvement_recommendations || analysis.improvementRecommendations),
     keywords: safeArray(analysis.keyword_analysis || analysis.keywordAnalysis),
+    featureSuggestions: safeArray(analysis.feature_and_growth_suggestions || analysis.featureAndGrowthSuggestions),
 });
 
 const ColdEmailCard = ({ item, labelKey }) => {
@@ -186,7 +190,7 @@ const ColdEmailCard = ({ item, labelKey }) => {
 
 const GeminiReport = ({ analysis, compact = false }) => {
     if (!analysis || typeof analysis !== 'object') return null;
-    const { businessSummary, overall, redFlags, techStack, growthIndicators, conversionProblems, seoIssues, bugs, errors, recs, keywords } = getAnalysisData(analysis);
+    const { businessSummary, overall, redFlags, techStack, growthIndicators, conversionProblems, seoIssues, bugs, errors, developerIssues, recs, keywords, featureSuggestions } = getAnalysisData(analysis);
     const strengths = safeArray(overall.strengths);
     const criticalIssues = safeArray(overall.critical_issues || overall.criticalIssues);
 
@@ -200,7 +204,7 @@ const GeminiReport = ({ analysis, compact = false }) => {
 
     const hasAnyContent = hasBizSummary || (overall && overall.summary) || strengths.length > 0 || criticalIssues.length > 0 ||
         redFlags.length > 0 || techStack.length > 0 || growthIndicators.length > 0 || conversionProblems.length > 0 || seoIssues.length > 0 ||
-        bugs.length > 0 || errors.length > 0 || recs.length > 0 || keywords.length > 0;
+        bugs.length > 0 || errors.length > 0 || developerIssues.length > 0 || recs.length > 0 || keywords.length > 0 || featureSuggestions.length > 0;
 
     if (!hasAnyContent) {
         return (
@@ -367,7 +371,7 @@ const GeminiReport = ({ analysis, compact = false }) => {
         {bugs.length > 0 && (
             <Section title="Bugs & Glitches" icon={<Bug size={20} />} compact={compact}>
                 {bugs.map((item, i) => (
-                    <IssueCard key={i} item={typeof item === 'object' ? item : { title: String(item), description: '', severity: 'medium' }} />
+                    <IssueCard key={i} item={typeof item === 'object' ? item : { title: String(item), description: '', severity: 'medium' }} showAngle />
                 ))}
             </Section>
         )}
@@ -376,7 +380,7 @@ const GeminiReport = ({ analysis, compact = false }) => {
         {errors.length > 0 && (
             <Section title="Errors & Loading Issues" icon={<AlertTriangle size={20} />} compact={compact}>
                 {errors.map((item, i) => {
-                    const it = typeof item === 'object' ? item : { issue: String(item), likely_cause: '' };
+                    const it = typeof item === 'object' ? item : { issue: String(item), likely_cause: '', cold_email_angle: '' };
                     return (
                     <div key={i} style={cardStyle}>
                         <p style={{ margin: 0, fontWeight: 500 }}>{safeString(it.issue)}</p>
@@ -385,8 +389,26 @@ const GeminiReport = ({ analysis, compact = false }) => {
                                 <em>Likely cause: {safeString(it.likely_cause)}</em>
                             </p>
                         )}
+                        {(it.cold_email_angle || it.coldEmailAngle) && (
+                            <div style={{ marginTop: '8px', fontSize: '0.9rem', color: '#4b5563', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                                <Mail size={14} style={{ flexShrink: 0, marginTop: '2px', color: '#6b7280' }} />
+                                <em>{safeString(it.cold_email_angle || it.coldEmailAngle)}</em>
+                            </div>
+                        )}
                     </div>
                 );})}
+            </Section>
+        )}
+
+        {/* Developer Technical Issues — vulnerabilities, security, functionality, glitches */}
+        {developerIssues.length > 0 && (
+            <Section title="Developer Technical Issues (Vulnerabilities, Security, Functions, Glitches)" icon={<Shield size={20} />} compact={compact}>
+                <p style={{ margin: '0 0 12px', fontSize: '0.9rem', color: '#6b7280' }}>
+                    Developer-focused findings: site vulnerabilities, security concerns, functions not working, and UI glitches.
+                </p>
+                {developerIssues.map((item, i) => (
+                    <DeveloperIssueCard key={i} item={typeof item === 'object' ? item : { category: 'glitch', title: String(item), description: '', severity: 'medium' }} />
+                ))}
             </Section>
         )}
 
@@ -418,6 +440,41 @@ const GeminiReport = ({ analysis, compact = false }) => {
         )}
 
         {/* Keyword Analysis */}
+        {featureSuggestions.length > 0 && (
+            <Section title="Feature & Growth Suggestions (AI Agent, Features, Practical Growth)" icon={<TrendingUp size={20} />} compact={compact}>
+                <p style={{ margin: '0 0 12px', fontSize: '0.9rem', color: '#6b7280' }}>
+                    Tailored to this company — AI agents, features, and how to practically grow their business.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {featureSuggestions.map((item, i) => {
+                        const it = typeof item === 'object' ? item : {};
+                        const type = safeString(it.type || '').toUpperCase();
+                        const suggestion = safeString(it.suggestion);
+                        const impact = safeString(it.practical_impact || it.practicalImpact);
+                        const angle = safeString(it.cold_email_angle || it.coldEmailAngle);
+                        if (!suggestion) return null;
+                        return (
+                            <div key={i} style={{ ...cardStyle, borderLeft: '4px solid #8b5cf6' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: (impact || angle) ? '8px' : 0 }}>
+                                    <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', background: '#8b5cf6', color: 'white', textTransform: 'uppercase' }}>
+                                        {type || 'Feature'}
+                                    </span>
+                                    <strong>{suggestion}</strong>
+                                </div>
+                                {impact && <p style={{ margin: '0 0 6px', fontSize: '0.9rem', color: '#059669' }}>Practical impact: {impact}</p>}
+                                {angle && (
+                                    <div style={{ fontSize: '0.9rem', color: '#4b5563', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                                        <Mail size={14} style={{ flexShrink: 0, marginTop: '2px', color: '#6b7280' }} />
+                                        <em>{angle}</em>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </Section>
+        )}
+
         {keywords.length > 0 && (
             <Section title="Keyword Analysis & Exact Google Rankings" icon={<Search size={20} />} compact={compact}>
                 {compact ? (
@@ -585,11 +642,12 @@ const Section = ({ title, icon, children, compact = false }) => (
     </div>
 );
 
-const IssueCard = ({ item }) => {
+const IssueCard = ({ item, showAngle = false }) => {
     if (!item || typeof item !== 'object') return null;
     const severityColors = { critical: '#dc2626', high: '#ea580c', medium: '#ca8a04', low: '#6b7280' };
     const sev = (item.severity && typeof item.severity === 'string') ? item.severity.toLowerCase() : 'medium';
     const bg = severityColors[sev] || '#6b7280';
+    const angle = safeString(item.cold_email_angle || item.coldEmailAngle);
     return (
         <div style={cardStyle}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
@@ -604,6 +662,37 @@ const IssueCard = ({ item }) => {
                 }}>{sev}</span>
             </div>
             <p style={{ margin: 0, fontSize: '0.9rem', color: '#4b5563' }}>{safeString(item.description)}</p>
+            {showAngle && angle && (
+                <div style={{ marginTop: '8px', fontSize: '0.9rem', color: '#4b5563', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <Mail size={14} style={{ flexShrink: 0, marginTop: '2px', color: '#6b7280' }} />
+                    <em>{angle}</em>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const DeveloperIssueCard = ({ item }) => {
+    if (!item || typeof item !== 'object') return null;
+    const severityColors = { critical: '#dc2626', high: '#ea580c', medium: '#ca8a04', low: '#6b7280' };
+    const sev = (item.severity && typeof item.severity === 'string') ? item.severity.toLowerCase() : 'medium';
+    const bg = severityColors[sev] || '#6b7280';
+    const cat = safeString(item.category || '').toUpperCase();
+    const angle = safeString(item.cold_email_angle || item.coldEmailAngle);
+    return (
+        <div style={{ ...cardStyle, borderLeft: '4px solid #dc2626' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', background: '#374151', color: 'white', textTransform: 'uppercase' }}>{cat || 'GLITCH'}</span>
+                <strong>{safeString(item.title)}</strong>
+                <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', background: bg, color: 'white', textTransform: 'uppercase' }}>{sev}</span>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: '#4b5563' }}>{safeString(item.description)}</p>
+            {angle && (
+                <div style={{ marginTop: '8px', fontSize: '0.9rem', color: '#4b5563', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <Mail size={14} style={{ flexShrink: 0, marginTop: '2px', color: '#6b7280' }} />
+                    <em>{angle}</em>
+                </div>
+            )}
         </div>
     );
 };

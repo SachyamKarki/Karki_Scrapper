@@ -5,10 +5,13 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import './index.css'
 
-// In production (Vercel), set VITE_API_URL to your backend URL
-const API_URL = import.meta.env.VITE_API_URL || 'https://scraper-backend-evss.onrender.com';
+// Dev: empty = same origin, Vite proxy forwards /api to localhost:5555
+// Prod: VITE_API_URL = your Render backend (e.g. https://scraper-backend.onrender.com)
+const API_URL = import.meta.env.DEV
+  ? ''
+  : (import.meta.env.VITE_API_URL || 'https://scraper-backend-evss.onrender.com');
 axios.defaults.baseURL = API_URL;
-axios.defaults.withCredentials = true
+axios.defaults.withCredentials = true;
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

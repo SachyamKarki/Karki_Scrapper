@@ -1,9 +1,13 @@
 #!/bin/bash
-# Usage: ./run.sh "Search Query" [Output File]
-# Example: ./run.sh "Gyms in Kathmandu" results.csv
+# Usage: ./run.sh "Search Query" [Batch ID]
+# Example: ./run.sh "Gyms in Kathmandu" batch-123
 
-# Skip local venv activation on Render (environment is already provided)
 cd "$(dirname "$0")" || exit
+
+# Activate venv when present (local dev); Render/production uses system Python
+if [ -f "venv/bin/activate" ]; then
+  source venv/bin/activate
+fi
 
 QUERY="${1:-restaurants in kathmandu}"
 BATCH_ID="${2:-default_session}"

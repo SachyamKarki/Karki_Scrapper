@@ -64,19 +64,30 @@ class BingSpider(scrapy.Spider):
     async def parse(self, response):
         page = response.meta["playwright_page"]
         
-        # Wait for results to load
-        try:
-            await page.wait_for_selector(".b_maglistcard", timeout=15000)
-        except:
-             print("DEBUG: Timeout waiting for Bing results.")
+        # Wait for map/results to load - try multiple selectors (Bing DOM changes often)
+        for selector in [".b_maglistcard", "*[data-entity]", ".b_mag", ".b_vlist2div", "a[href*='bing.com/maps']"]:
+            try:
+                await page.wait_for_selector(selector, timeout=20000)
+                break
+            except Exception:
+                continue
+        else:
+            print("DEBUG: Timeout waiting for Bing results. Proceeding with page content...")
+        
+        # Extra wait for dynamic content
+        await asyncio.sleep(3)
         
         # Extract items using Scrapy selector on the current page content
         content = await page.content()
         response = scrapy.http.HtmlResponse(url=page.url, body=content, encoding='utf-8')
         
-        # Selectors based on inspection
+        # Try multiple card selectors (Bing DOM changes)
         cards = response.css(".b_maglistcard")
-        print(f"DEBUG: Found {len(cards)} cards (b_maglistcard)")
+        if not cards:
+            cards = response.css("*[data-entity]")
+        if not cards:
+            cards = response.css(".b_mag")
+        print(f"DEBUG: Found {len(cards)} cards")
         
         if not cards:
             print("DEBUG: No list cards found. Attempting Single Result Fallback...")
@@ -220,11 +231,12 @@ class BingSpider(scrapy.Spider):
             reviews_text = card.css(".l_rev_rc span::text").get()
             if reviews_text:
                  # Clean "(4 reviews)" -> "4"
-                 import re
                  match = re.search(r'\d+', reviews_text)
                  if match:
                      item['reviews_count'] = match.group(0)
 
-            yield item
+            # Skip empty items (e.g. from *[data-entity] fallback picking wrong elements)
+            if item.get('name') or item.get('address'):
+                yield item
 
         await page.close()

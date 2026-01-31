@@ -8,6 +8,7 @@ import AdminPanel from './pages/AdminPanel';
 import Chat from './pages/Chat';
 import DirectMessages from './pages/DirectMessages';
 import EmailManagement from './pages/EmailManagement';
+import LinkAnalyzer from './pages/LinkAnalyzer';
 
 const ProtectedLayout = ({ adminOnly = false, superadminOnly = false }) => {
   const { user, loading } = useAuth();
@@ -32,6 +33,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/link-analyzer" element={<LinkAnalyzer />} />
             <Route path="/email" element={<EmailManagement />} />
             <Route path="/messages" element={<DirectMessages />} />
           </Route>

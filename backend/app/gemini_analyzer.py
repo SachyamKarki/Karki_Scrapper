@@ -52,10 +52,13 @@ IMPORTANT: Respond with ONLY a valid JSON object. No markdown, no code blocks, n
     {{ "issue": "e.g. No meta titles", "present": true|false, "cold_email_angle": "Your site isn't ranking for branded searches — that's usually an easy fix." }}
   ],
   "bugs_and_glitches": [
-    {{ "title": "Brief issue title", "description": "Detailed description", "severity": "critical|high|medium|low" }}
+    {{ "title": "Brief issue title", "description": "Detailed description", "severity": "critical|high|medium|low", "cold_email_angle": "Pitch angle for outreach" }}
   ],
   "errors_and_loading_issues": [
-    {{ "issue": "Description of error or loading problem", "likely_cause": "What might cause it" }}
+    {{ "issue": "Description of error or loading problem", "likely_cause": "What might cause it", "cold_email_angle": "Pitch angle for outreach" }}
+  ],
+  "developer_technical_issues": [
+    {{ "category": "vulnerability|security|functionality|glitch", "title": "Brief title", "description": "Detailed description", "severity": "critical|high|medium|low", "cold_email_angle": "Pitch angle for outreach" }}
   ],
   "overall_analysis": {{
     "summary": "2-3 sentence overall assessment of the website",
@@ -63,7 +66,7 @@ IMPORTANT: Respond with ONLY a valid JSON object. No markdown, no code blocks, n
     "critical_issues": ["Most urgent issues to fix"]
   }},
   "improvement_recommendations": [
-    {{ "category": "e.g. Performance, UX, SEO", "recommendation": "Specific actionable recommendation", "priority": "high|medium|low" }}
+    {{ "category": "e.g. Performance, UX, SEO", "recommendation": "Specific actionable recommendation", "priority": "high|medium|low", "cold_email_angle": "Pitch angle for cold outreach" }}
   ],
   "keyword_analysis": [
     {{
@@ -73,8 +76,12 @@ IMPORTANT: Respond with ONLY a valid JSON object. No markdown, no code blocks, n
       "estimated_ranking_potential": "low|medium|high",
       "estimated_current_rank": "1-3|4-10|11-20|21-30|31-50|Not in top 50|Not ranking",
       "landing_page_suggestion": "Which page/section should target this",
-      "improvement_tips": "How to improve ranking for this keyword"
+      "improvement_tips": "How to improve ranking for this keyword",
+      "cold_email_angle": "Pitch angle for cold outreach about this keyword opportunity"
     }}
+  ],
+  "feature_and_growth_suggestions": [
+    {{ "type": "ai_agent|feature|growth", "suggestion": "Specific suggestion for this company", "practical_impact": "How it grows their business", "cold_email_angle": "Pitch angle" }}
   ]
 }}
 
@@ -85,35 +92,146 @@ IMPORTANT: Respond with ONLY a valid JSON object. No markdown, no code blocks, n
 - business_growth_indicators: Recently launched site, active on social, running paid ads with weak landing page, hiring, press/funding.
 - conversion_problems: No lead forms, forms but no thank-you, no booking, no chat, long checkout, no trust signals.
 - seo_visibility_issues: No meta titles/descriptions, duplicate titles, no local SEO/schema, not ranking for brand, abandoned blog.
-- keyword_analysis: Provide exactly 10 keywords. For EACH keyword you MUST include estimated_current_rank (REQUIRED) with one of: "1-3", "4-10", "11-20", "21-30", "31-50", "Not in top 50", or "Not ranking". Use narrow bands (e.g. 21-30 not 21-50). Never omit estimated_current_rank.
+- bugs_and_glitches: Include cold_email_angle. Cover: UI glitches, layout breaks, responsive issues, broken elements.
+- errors_and_loading_issues: Include cold_email_angle. Cover: forms not submitting, links broken, JS errors, slow load, timeouts.
+- developer_technical_issues (CRITICAL — MUST provide 5-10 items): Developer-focused findings. MUST include at least one from EACH category: (1) vulnerability — XSS, SQL injection risk, outdated libraries, exposed endpoints, CORS misconfig; (2) security — no HTTPS, weak auth, exposed data, missing security headers, mixed content; (3) functionality — broken forms, broken buttons, broken links, 404s, JS errors, features not working; (4) glitch — layout breaks, responsive issues, UI bugs, visual glitches. For each: category (vulnerability|security|functionality|glitch), title, description, severity, cold_email_angle.
+- keyword_analysis: Provide exactly 10 keywords that are real Google search phrases (2-5 words, e.g. "cafe pokhara", "best restaurant lakeside") - these will be checked against live Google results. For EACH keyword you MUST include: estimated_current_rank (REQUIRED) with one of "1-3", "4-10", "11-20", "21-30", "31-50", "Not in top 50", or "Not ranking"; improvement_tips; and cold_email_angle (a 1-2 sentence pitch for cold outreach about this keyword opportunity). Use narrow bands (e.g. 21-30 not 21-50). Never omit estimated_current_rank.
+- improvement_recommendations: Include cold_email_angle for each recommendation (pitch angle for outreach).
+- feature_and_growth_suggestions: Provide 5-8 suggestions tailored to THIS company. Mix of: (1) AI agent ideas (e.g. chatbot, AI booking, automated follow-ups) — how AI can help them specifically; (2) Feature suggestions (e.g. online ordering, live chat, booking system) — based on their business type; (3) Practical growth tips (e.g. local SEO, email marketing, retargeting) — how it practically grows revenue/leads. For each: type (ai_agent|feature|growth), suggestion, practical_impact (concrete outcome), cold_email_angle.
 - Use only valid JSON with snake_case keys. Output ONLY the JSON object, nothing else."""
+
+# Same schema as GEMINI_PROMPT but tailored for Facebook pages (posts, about, engagement, etc.)
+GEMINI_PROMPT_FACEBOOK = """You are an expert social media and business analyst. Analyze the following Facebook page content and provide a comprehensive report for cold-email outreach and sales prospecting. Use the SAME JSON structure as website analysis.
+
+**Facebook Page URL:** {url}
+**Business/Page Context:** {business_context}
+
+**Facebook Page Text Content (first ~15000 chars):**
+```
+{content}
+```
+
+IMPORTANT: Respond with ONLY a valid JSON object. No markdown, no code blocks, no explanation before or after. Use snake_case for all keys. Use the EXACT same schema as website analysis.
+
+{{
+  "business_content_summary": {{
+    "what_they_do": "2-3 sentence description of what this business does, their industry, and core offering",
+    "key_products_services": ["Product/service 1", "Product/service 2", "..."],
+    "target_audience": "Who they serve (B2B/B2C, demographics, industries)",
+    "value_proposition": "Their main differentiator or unique selling point",
+    "key_content_on_site": ["Main content/section 1 (e.g. About, posts, services)", "..."],
+    "location_market": "Geographic focus, local vs national, if evident",
+    "crucial_details": ["Important detail 1 (e.g. contact methods)", "Important detail 2", "..."]
+  }},
+  "website_quality_red_flags": [
+    {{ "flag": "e.g. Incomplete About section, no contact info", "present": true|false, "cold_email_angle": "..." }}
+  ],
+  "tech_stack_signals": [
+    {{ "signal": "e.g. No linked website, no shop", "present": true|false, "cold_email_angle": "..." }}
+  ],
+  "business_growth_indicators": [
+    {{ "indicator": "e.g. Active posting, recent reviews", "present": true|false, "cold_email_angle": "..." }}
+  ],
+  "conversion_problems": [
+    {{ "problem": "e.g. No CTA, no contact button", "present": true|false, "cold_email_angle": "..." }}
+  ],
+  "seo_visibility_issues": [
+    {{ "issue": "e.g. No website link, weak bio", "present": true|false, "cold_email_angle": "..." }}
+  ],
+  "bugs_and_glitches": [
+    {{ "title": "Brief issue title", "description": "Detailed description", "severity": "critical|high|medium|low", "cold_email_angle": "Pitch angle for outreach" }}
+  ],
+  "errors_and_loading_issues": [
+    {{ "issue": "Description of error or loading problem", "likely_cause": "What might cause it", "cold_email_angle": "Pitch angle for outreach" }}
+  ],
+  "developer_technical_issues": [
+    {{ "category": "vulnerability|security|functionality|glitch", "title": "Brief title", "description": "Detailed description", "severity": "critical|high|medium|low", "cold_email_angle": "Pitch angle for outreach" }}
+  ],
+  "overall_analysis": {{
+    "summary": "2-3 sentence overall assessment of the Facebook page",
+    "strengths": ["strength 1", "strength 2", "strength 3"],
+    "critical_issues": ["Most urgent issues to fix"]
+  }},
+  "improvement_recommendations": [
+    {{ "category": "e.g. Profile, Engagement, Conversion", "recommendation": "Specific actionable recommendation", "priority": "high|medium|low", "cold_email_angle": "Pitch angle for cold outreach" }}
+  ],
+  "keyword_analysis": [
+    {{
+      "keyword": "exact keyword phrase to search in Google",
+      "relevance_score": 1-10,
+      "current_content_strength": "weak|moderate|strong",
+      "estimated_ranking_potential": "low|medium|high",
+      "estimated_current_rank": "1-3|4-10|11-20|21-30|31-50|Not in top 50|Not ranking",
+      "landing_page_suggestion": "Which page/section should target this",
+      "improvement_tips": "How to improve ranking for this keyword",
+      "cold_email_angle": "Pitch angle for cold outreach about this keyword opportunity"
+    }}
+  ],
+  "feature_and_growth_suggestions": [
+    {{
+      "type": "ai_agent|feature|growth",
+      "suggestion": "Specific suggestion tailored to this company",
+      "practical_impact": "How it practically grows their business",
+      "cold_email_angle": "Pitch angle for cold outreach"
+    }}
+  ]
+}}
+
+**Requirements:**
+- bugs_and_glitches, errors_and_loading_issues: Include cold_email_angle. Cover: UI glitches, layout breaks, forms not submitting, links broken, JS errors, slow load.
+- developer_technical_issues (CRITICAL — MUST provide 5-10 items): Developer-focused findings. MUST include at least one from EACH: (1) vulnerability — XSS, SQL injection risk, outdated libraries, exposed endpoints; (2) security — no HTTPS, weak auth, exposed data, missing headers; (3) functionality — broken forms, broken buttons, broken links, 404s, JS errors; (4) glitch — layout breaks, responsive issues, UI bugs. For each: category, title, description, severity, cold_email_angle.
+- keyword_analysis: Provide exactly 10 keywords that are real Google search phrases (2-5 words) - these will be checked against live Google results for the business's website. For EACH keyword you MUST include: estimated_current_rank (REQUIRED); improvement_tips; and cold_email_angle.
+- feature_and_growth_suggestions: Provide 5-8 suggestions tailored to THIS company. Mix of: AI agent ideas (chatbot, AI booking), feature suggestions (online ordering, live chat), practical growth tips (local SEO, email marketing). For each: type, suggestion, practical_impact, cold_email_angle.
+- Use only valid JSON with snake_case keys. Output ONLY the JSON object, nothing else. Same structure as website analysis."""
+
+def _link_matches_domain(link, domain):
+    """Check if link URL belongs to the given domain (handles subdomains, www, paths)."""
+    if not link or not domain:
+        return False
+    link = link.lower().strip()
+    domain = domain.lower().replace('www.', '')
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(link if link.startswith('http') else 'https://' + link)
+        host = (parsed.netloc or parsed.path).split(':')[0].replace('www.', '')
+        return host == domain or host.endswith('.' + domain)
+    except Exception:
+        return domain in link or link.endswith(domain)
+
 
 def fetch_serper_ranking(keyword, website_domain, api_key):
     """Fetch exact Google ranking for a keyword via Serper API. Returns position (1-based) or None if not found."""
     if not api_key or not keyword or not website_domain:
         return None
-    try:
-        resp = requests.post(
-            'https://google.serper.dev/search',
-            headers={
-                'X-API-KEY': api_key,
-                'Content-Type': 'application/json',
-            },
-            json={'q': keyword},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        organic = data.get('organic') or []
-        domain_lower = website_domain.lower().replace('www.', '')
-        for item in organic:
-            link = (item.get('link') or '').lower()
-            position = item.get('position')
-            if domain_lower in link or link.endswith(domain_lower):
-                return int(position) if isinstance(position, (int, float)) and position > 0 else None
-        return None
-    except Exception:
-        return None
+    domain_clean = website_domain.lower().replace('www.', '').split(':')[0]
+    endpoints = ['https://google.serper.dev/search', 'https://serper.dev/search']
+    for endpoint in endpoints:
+        try:
+            resp = requests.post(
+                endpoint,
+                headers={
+                    'X-API-KEY': api_key,
+                    'Content-Type': 'application/json',
+                },
+                json={'q': keyword, 'num': 100},
+                timeout=15,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            organic = data.get('organic') or []
+            for item in organic:
+                link = item.get('link') or ''
+                position = item.get('position')
+                if _link_matches_domain(link, domain_clean):
+                    if isinstance(position, (int, float)) and position > 0:
+                        return int(position)
+                    return None
+            return None
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).debug(f"Serper {endpoint} failed for '{keyword}': {e}")
+            continue
+    return None
 
 
 def extract_domain_from_url(url):
@@ -149,6 +267,38 @@ def fetch_website_content(url, timeout=25):
     except Exception as e:
         raise ValueError(f"Failed to fetch website: {str(e)}")
 
+
+def fetch_facebook_content(url, timeout=30):
+    """Fetch Facebook page content using Playwright (same approach as website - extract visible text)."""
+    if not url.startswith('http'):
+        url = 'https://' + url
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(
+                user_agent=DEFAULT_HEADERS.get('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'),
+                viewport={'width': 1280, 'height': 800}
+            )
+            page = context.new_page()
+            page.goto(url, wait_until='domcontentloaded', timeout=timeout * 1000)
+            page.wait_for_timeout(3000)  # Allow JS to render
+            text = page.evaluate('''() => {
+                const body = document.body;
+                if (!body) return '';
+                const clone = body.cloneNode(true);
+                [].forEach.call(clone.querySelectorAll('script, style, noscript'), el => el.remove());
+                return clone.innerText || clone.textContent || '';
+            }''')
+            browser.close()
+            text = (text or '').strip().replace('\r\n', '\n').replace('\r', '\n')
+            # Limit size for API (same as website)
+            return text[:15000] if len(text) > 15000 else text
+    except ImportError:
+        raise ValueError('Playwright not installed. Run: pip install playwright && playwright install chromium')
+    except Exception as e:
+        raise ValueError(f"Failed to fetch Facebook page: {str(e)}")
+
 def parse_gemini_json(response_text):
     """Extract JSON from Gemini response (handles markdown code blocks)."""
     if not response_text or not isinstance(response_text, str):
@@ -170,23 +320,34 @@ def parse_gemini_json(response_text):
         text = text[start:end + 1]
     return json.loads(text)
 
-def analyze_with_gemini(url, business_name='', business_category=''):
+def analyze_with_gemini(url, business_name='', business_category='', url_type='website', website_url_for_serper=None):
     """
-    Run Gemini-powered website analysis.
+    Run Gemini-powered analysis for website, Facebook, or Instagram.
     Returns structured dict with bugs, glitches, improvements, keyword analysis.
+    url_type: 'website' | 'facebook' | 'instagram'
+    website_url_for_serper: For Facebook/Instagram analysis, pass business website URL for 10 SEO keyword ranking lookup.
     """
     api_key = os.getenv('GEMINI_API_KEY')
     if not api_key:
         return {'status': 'failed', 'error': 'GEMINI_API_KEY not configured'}
 
+    url_type = (url_type or 'website').strip().lower()
+
+    # Fetch content: website uses requests+BeautifulSoup, Facebook uses Playwright (same structured output)
     try:
-        content = fetch_website_content(url)
+        if url_type == 'facebook':
+            content = fetch_facebook_content(url)
+        else:
+            content = fetch_website_content(url)
     except ValueError as e:
         return {'status': 'failed', 'error': str(e)}
 
-    business_context = f"{business_name} - {business_category}" if (business_name or business_category) else "General business website"
+    source_label = {'website': 'website', 'facebook': 'Facebook page', 'instagram': 'Instagram profile'}.get(url_type, 'page')
+    business_context = f"{business_name} - {business_category}" if (business_name or business_category) else f"General business {source_label}"
 
-    prompt = GEMINI_PROMPT.format(
+    # Same JSON schema for website and Facebook - identical report structure in AnalysisModal
+    prompt_template = GEMINI_PROMPT_FACEBOOK if url_type == 'facebook' else GEMINI_PROMPT
+    prompt = prompt_template.format(
         url=url,
         business_context=business_context,
         content=content
@@ -241,9 +402,9 @@ def analyze_with_gemini(url, business_name='', business_category=''):
     def safe_str(val):
         return str(val) if val is not None else ''
 
-    # Serper API: fetch exact Google rankings for each keyword (optional)
+    # Serper API: fetch exact Google rankings for 10 SEO keywords (website: use url; Facebook/Instagram: use business website)
     serper_key = os.getenv('SERPER_API_KEY')
-    domain = extract_domain_from_url(url)
+    domain = extract_domain_from_url(url) if url_type == 'website' else extract_domain_from_url(website_url_for_serper or '')
 
     # Sanitize keyword_analysis - ensure relevance_score is int, strings are safe
     keyword_data = (get_key(data, 'keyword_analysis', 'keywordAnalysis') or
@@ -277,7 +438,7 @@ def analyze_with_gemini(url, business_name='', business_category=''):
                 else:
                     est_rank_str = safe_str(est_rank).strip() or None
             # Use Serper exact rank when available; otherwise Gemini's estimated rank; else derive from potential
-            display_rank = google_rank if google_rank is not None else est_rank_str
+            display_rank = str(google_rank) if google_rank is not None else est_rank_str
             if display_rank is None and potential:
                 pot = safe_str(potential).lower()
                 if pot == 'high': display_rank = '1-10'
@@ -285,18 +446,20 @@ def analyze_with_gemini(url, business_name='', business_category=''):
                 elif pot == 'low': display_rank = 'Not in top 50'
             if display_rank is None:
                 display_rank = 'Unknown'
+            kw_angle = safe_str(kw.get('cold_email_angle') or kw.get('coldEmailAngle', ''))
             keywords.append({
                 'keyword': kw_text,
                 'relevance_score': min(10, max(1, int(score))) if score is not None else 5,
                 'current_content_strength': safe_str(strength).lower() or 'moderate',
                 'estimated_ranking_potential': safe_str(potential).lower() or 'medium',
                 'improvement_tips': safe_str(tips),
+                'cold_email_angle': kw_angle,
                 'google_rank': google_rank,
                 'estimated_current_rank': est_rank_str,
                 'display_rank': display_rank,
             })
         elif isinstance(kw, (str, int, float)):
-            keywords.append({'keyword': str(kw), 'relevance_score': 5, 'current_content_strength': 'moderate', 'estimated_ranking_potential': 'medium', 'improvement_tips': '', 'google_rank': None, 'estimated_current_rank': None, 'display_rank': 'Unknown'})
+            keywords.append({'keyword': str(kw), 'relevance_score': 5, 'current_content_strength': 'moderate', 'estimated_ranking_potential': 'medium', 'improvement_tips': '', 'cold_email_angle': '', 'google_rank': None, 'estimated_current_rank': None, 'display_rank': 'Unknown'})
 
     # Sanitize bugs_and_glitches
     bugs_data = get_key(data, 'bugs_and_glitches', 'bugsAndGlitches') or []
@@ -307,9 +470,10 @@ def analyze_with_gemini(url, business_name='', business_category=''):
                 'title': safe_str(b.get('title', '')),
                 'description': safe_str(b.get('description', '')),
                 'severity': (safe_str(b.get('severity', '')).lower() or 'medium')[:10],
+                'cold_email_angle': safe_str(b.get('cold_email_angle') or b.get('coldEmailAngle', '')),
             })
         elif isinstance(b, str):
-            bugs.append({'title': b[:100], 'description': b, 'severity': 'medium'})
+            bugs.append({'title': b[:100], 'description': b, 'severity': 'medium', 'cold_email_angle': ''})
 
     # Sanitize errors_and_loading_issues
     errors_data = get_key(data, 'errors_and_loading_issues', 'errorsAndLoadingIssues') or []
@@ -318,9 +482,25 @@ def analyze_with_gemini(url, business_name='', business_category=''):
         if isinstance(e, dict):
             issue = e.get('issue', '')
             cause = e.get('likely_cause') or e.get('likelyCause', '')
-            errors.append({'issue': safe_str(issue), 'likely_cause': safe_str(cause)})
+            angle = e.get('cold_email_angle') or e.get('coldEmailAngle', '')
+            errors.append({'issue': safe_str(issue), 'likely_cause': safe_str(cause), 'cold_email_angle': safe_str(angle)})
         elif isinstance(e, str):
-            errors.append({'issue': e, 'likely_cause': ''})
+            errors.append({'issue': e, 'likely_cause': '', 'cold_email_angle': ''})
+
+    # Sanitize developer_technical_issues (vulnerabilities, security, functionality, glitches)
+    dev_issues_data = get_key(data, 'developer_technical_issues', 'developerTechnicalIssues') or []
+    dev_issues = []
+    for d in safe_list(dev_issues_data):
+        if isinstance(d, dict):
+            dev_issues.append({
+                'category': (safe_str(d.get('category', '')).lower() or 'glitch')[:20],
+                'title': safe_str(d.get('title', '')),
+                'description': safe_str(d.get('description', '')),
+                'severity': (safe_str(d.get('severity', '')).lower() or 'medium')[:10],
+                'cold_email_angle': safe_str(d.get('cold_email_angle') or d.get('coldEmailAngle', '')),
+            })
+        elif isinstance(d, str):
+            dev_issues.append({'category': 'glitch', 'title': d[:100], 'description': d, 'severity': 'medium', 'cold_email_angle': ''})
 
     # Sanitize improvement_recommendations
     recs_data = get_key(data, 'improvement_recommendations', 'improvementRecommendations') or []
@@ -331,6 +511,7 @@ def analyze_with_gemini(url, business_name='', business_category=''):
                 'category': safe_str(r.get('category', '')),
                 'recommendation': safe_str(r.get('recommendation', '')),
                 'priority': (safe_str(r.get('priority', '')).lower() or 'medium')[:10],
+                'cold_email_angle': safe_str(r.get('cold_email_angle') or r.get('coldEmailAngle', '')),
             })
         elif isinstance(r, str):
             recs.append({'category': 'General', 'recommendation': r, 'priority': 'medium'})
@@ -412,9 +593,22 @@ def analyze_with_gemini(url, business_name='', business_category=''):
         elif isinstance(item, str):
             seo_issues.append({'issue': item[:200], 'present': True, 'cold_email_angle': ''})
 
+    feature_suggestions = []
+    for item in safe_list(get_key(data, 'feature_and_growth_suggestions', 'featureAndGrowthSuggestions')):
+        if isinstance(item, dict):
+            feature_suggestions.append({
+                'type': safe_str(item.get('type', '')).lower() or 'feature',
+                'suggestion': safe_str(item.get('suggestion', '')),
+                'practical_impact': safe_str(item.get('practical_impact') or item.get('practicalImpact', '')),
+                'cold_email_angle': safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle', '')),
+            })
+        elif isinstance(item, str):
+            feature_suggestions.append({'type': 'feature', 'suggestion': item[:200], 'practical_impact': '', 'cold_email_angle': ''})
+
     return {
         'status': 'completed',
         'source': 'gemini',
+        'url_type': url_type,
         'url': url,
         'analyzed_at': datetime.utcnow().isoformat(),
         'business_content_summary': business_summary,
@@ -425,7 +619,239 @@ def analyze_with_gemini(url, business_name='', business_category=''):
         'seo_visibility_issues': seo_issues,
         'bugs_and_glitches': bugs,
         'errors_and_loading_issues': errors,
+        'developer_technical_issues': dev_issues,
         'overall_analysis': overall,
         'improvement_recommendations': recs,
         'keyword_analysis': keywords,
+        'feature_and_growth_suggestions': feature_suggestions,
     }
+
+
+def _build_must_include_checklist(analysis):
+    """Extract every finding from analysis into a flat checklist so the model cannot ignore any line."""
+    def safe_list(v):
+        return v if isinstance(v, list) else []
+    def safe_str(v):
+        return str(v).strip() if v is not None else ''
+    lines = []
+    # Red flags (present=true)
+    for item in safe_list(analysis.get('website_quality_red_flags') or analysis.get('websiteQualityRedFlags')):
+        if isinstance(item, dict) and item.get('present'):
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            flag = safe_str(item.get('flag'))
+            if angle or flag:
+                lines.append(f"[Red flag] {flag or angle} → {angle or flag}")
+    # Tech stack
+    for item in safe_list(analysis.get('tech_stack_signals') or analysis.get('techStackSignals')):
+        if isinstance(item, dict) and item.get('present'):
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            sig = safe_str(item.get('signal'))
+            if angle or sig:
+                lines.append(f"[Tech] {sig or angle} → {angle or sig}")
+    # Growth indicators
+    for item in safe_list(analysis.get('business_growth_indicators') or analysis.get('businessGrowthIndicators')):
+        if isinstance(item, dict) and item.get('present'):
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            ind = safe_str(item.get('indicator'))
+            if angle or ind:
+                lines.append(f"[Growth] {ind or angle} → {angle or ind}")
+    # Conversion problems
+    for item in safe_list(analysis.get('conversion_problems') or analysis.get('conversionProblems')):
+        if isinstance(item, dict) and item.get('present'):
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            prob = safe_str(item.get('problem'))
+            if angle or prob:
+                lines.append(f"[Conversion] {prob or angle} → {angle or prob}")
+    # SEO issues
+    for item in safe_list(analysis.get('seo_visibility_issues') or analysis.get('seoVisibilityIssues')):
+        if isinstance(item, dict) and item.get('present'):
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            iss = safe_str(item.get('issue'))
+            if angle or iss:
+                lines.append(f"[SEO] {iss or angle} → {angle or iss}")
+    # Bugs & glitches
+    for item in safe_list(analysis.get('bugs_and_glitches') or analysis.get('bugsAndGlitches')):
+        if isinstance(item, dict):
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            title = safe_str(item.get('title'))
+            desc = safe_str(item.get('description'))
+            if angle or title or desc:
+                lines.append(f"[Bug] {title or desc} → {angle or desc or title}")
+    # Errors & loading
+    for item in safe_list(analysis.get('errors_and_loading_issues') or analysis.get('errorsAndLoadingIssues')):
+        if isinstance(item, dict):
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            iss = safe_str(item.get('issue'))
+            if angle or iss:
+                lines.append(f"[Error] {iss} → {angle or iss}")
+    # Developer technical issues
+    for item in safe_list(analysis.get('developer_technical_issues') or analysis.get('developerTechnicalIssues')):
+        if isinstance(item, dict):
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            title = safe_str(item.get('title'))
+            cat = safe_str(item.get('category'))
+            if angle or title:
+                lines.append(f"[Dev/{cat or 'tech'}] {title} → {angle or title}")
+    # Improvement recommendations
+    for item in safe_list(analysis.get('improvement_recommendations') or analysis.get('improvementRecommendations')):
+        if isinstance(item, dict):
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            rec = safe_str(item.get('recommendation'))
+            if angle or rec:
+                lines.append(f"[Rec] {rec} → {angle or rec}")
+    # Keywords
+    for item in safe_list(analysis.get('keyword_analysis') or analysis.get('keywordAnalysis')):
+        if isinstance(item, dict):
+            kw = safe_str(item.get('keyword'))
+            rank = item.get('display_rank') or item.get('google_rank') or item.get('estimated_current_rank')
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            if kw and (angle or rank):
+                lines.append(f"[Keyword] {kw} (rank: {rank or '?'}) → {angle or f'opportunity for {kw}'}")
+    # Feature & growth suggestions
+    for item in safe_list(analysis.get('feature_and_growth_suggestions') or analysis.get('featureAndGrowthSuggestions')):
+        if isinstance(item, dict):
+            angle = safe_str(item.get('cold_email_angle') or item.get('coldEmailAngle'))
+            sug = safe_str(item.get('suggestion'))
+            impact = safe_str(item.get('practical_impact') or item.get('practicalImpact'))
+            if angle or sug:
+                lines.append(f"[Feature] {sug} (impact: {impact}) → {angle or sug}")
+    # Critical issues from overall
+    for s in safe_list((analysis.get('overall_analysis') or analysis.get('overallAnalysis') or {}).get('critical_issues') or []):
+        if s:
+            lines.append(f"[Critical] {s}")
+    return lines
+
+
+def generate_email_with_gemini(place, analysis, note_text='', template_type=1, custom_prompt=''):
+    """
+    Generate a comprehensive cold email from analysis. Returns {subject, body} or {status: 'failed', error}.
+    template_type: 1=Professional, 2=Friendly, 3=Direct, 4=Best (optimal — includes every finding, makes them feel they need help)
+    """
+    api_key = os.getenv('GEMINI_API_KEY')
+    if not api_key:
+        return {'status': 'failed', 'error': 'GEMINI_API_KEY not configured'}
+
+    if not analysis or not isinstance(analysis, dict):
+        return {'status': 'failed', 'error': 'No analysis available. Run analysis first.'}
+    if analysis.get('status') == 'failed':
+        return {'status': 'failed', 'error': 'Analysis failed. Run analysis again.'}
+
+    tone_map = {1: 'Professional', 2: 'Friendly', 3: 'Direct', 4: 'Best'}
+    tone = tone_map.get(template_type, 'Professional')
+
+    # Build explicit checklist so model cannot ignore findings
+    must_include_lines = _build_must_include_checklist(analysis)
+    checklist_text = '\n'.join(f'- {line}' for line in must_include_lines) if must_include_lines else '(No specific findings — use business summary and overall_analysis)'
+
+    try:
+        analysis_text = json.dumps(analysis, indent=2, default=str)
+    except (TypeError, ValueError) as e:
+        return {'status': 'failed', 'error': f'Invalid analysis format: {e}'}
+    if len(analysis_text) > 35000:
+        analysis_text = analysis_text[:35000] + '\n... [truncated]'
+
+    business_name = str(place.get('name') or 'this business')
+    business_category = str(place.get('category') or '')
+    website_url = str(place.get('website') or analysis.get('url') or '')
+    has_website = bool(website_url and website_url.strip())
+
+    tone_desc = {
+        'Professional': 'Formal, business-focused, value-driven.',
+        'Friendly': 'Warm, conversational, personable.',
+        'Direct': 'Short, punchy, clear call-to-action. No fluff.',
+        'Best': 'OPTIMAL TONE — Best of all. See special instructions below.'
+    }.get(tone, 'Professional')
+
+    best_tone_instructions = """
+**BEST TONE (template 4) — CRITICAL:**
+- Include EACH AND EVERY line from the MUST-INCLUDE CHECKLIST below. Do NOT skip any. Weave the essence of each into the email.
+- Make the company feel: "Yes, we have a lot to improve and we need your help." Create urgency and desire for improvement.
+- **IF NO WEBSITE or weak/missing site:** Influence them on how critical a great website is — lost customers, no online presence, competitors ahead.
+- **IF THEY HAVE A WEBSITE:** Show specific issues found — ranking gaps, broken elements, slow load, security, bugs, glitches. Make them feel their site needs care.
+- 300-450 words allowed. Cohesive paragraphs, not bullet list. End with soft CTA. Sign as Shak.
+""" if tone == 'Best' else ''
+
+    prompt = f"""You are an expert cold email copywriter. Create a comprehensive cold email for sales outreach that demonstrates deep research.
+
+**Business:** {business_name}
+**Category:** {business_category}
+**Website URL:** {website_url or 'Not provided'}
+**Has website:** {has_website}
+**Tone:** {tone} — {tone_desc}
+
+**MUST-INCLUDE CHECKLIST — DO NOT SKIP ANY OF THESE. Each line is a finding from the analysis. Weave the essence of EACH into the email in the best way:**
+```
+{checklist_text}
+```
+
+**Full Analysis (reference for details):**
+```
+{analysis_text}
+```
+
+**Notes (if any):** {note_text or 'None'}
+{best_tone_instructions}
+**Requirements:**
+- **CRITICAL:** Every line in the MUST-INCLUDE CHECKLIST above MUST appear in some form in your email. Do not ignore or skip any finding. Use the cold_email_angle or description from each.
+- **Business summary:** Use what_they_do, target_audience, value_proposition from business_content_summary.
+- **Domain/website:** If domain differs from company name or is hard to find, mention it.
+- **Red flags, tech stack, growth, conversion, SEO:** Include cold_email_angle from each present item.
+- **Bugs, errors, developer_technical_issues:** Include vulnerabilities, security concerns, functions not working, glitches — use cold_email_angle from each.
+- **Keywords:** Mention specific keywords and rankings (e.g. "you're at #12 for 'cafe pokhara'").
+- **Feature & growth suggestions:** Include AI agent ideas, feature suggestions, practical_impact.
+- **Improvement recommendations:** Weave in cold_email_angle from each.
+- **Critical issues:** Include from overall_analysis.critical_issues.
+- **Greeting:** Start the email with exactly: "Greetings {{Business team}}" (keep this literal — it is a merge field).
+- Write as cohesive paragraphs (not bullet list). 200-350 words (300-450 for Best tone).
+- End with a clear, soft call-to-action.
+- Plain text only: no markdown, no **, no asterisks.
+- Sign as "Shak".
+- Output ONLY valid JSON: {{"subject": "Email subject line", "body": "Full email body text"}}
+- No markdown, no code blocks, no extra text."""
+
+    MODELS_TO_TRY = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-3-flash-preview']
+    raw = None
+    last_error = None
+
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+        for model_name in MODELS_TO_TRY:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content(prompt)
+                raw = getattr(response, 'text', None)
+                if raw and isinstance(raw, str) and len(raw.strip()) > 10:
+                    break
+            except Exception as e:
+                last_error = e
+                continue
+        if not raw or not isinstance(raw, str):
+            err_msg = str(last_error) if last_error else 'Empty response'
+            return {'status': 'failed', 'error': f'Gemini error: {err_msg}'}
+    except ImportError:
+        return {'status': 'failed', 'error': 'google-generativeai not installed. Run: pip install google-generativeai'}
+    except Exception as e:
+        return {'status': 'failed', 'error': str(e)}
+
+    try:
+        text = raw.strip()
+        if '```json' in text:
+            text = text.split('```json')[1].split('```')[0].strip()
+        elif '```' in text:
+            parts = text.split('```')
+            if len(parts) >= 2:
+                text = parts[1].strip()
+                if text.startswith('json'):
+                    text = text[4:].strip()
+        start, end = text.find('{'), text.rfind('}')
+        if start >= 0 and end > start:
+            text = text[start:end + 1]
+        data = json.loads(text)
+        subject = data.get('subject', '') or data.get('Subject', '')
+        body = data.get('body', '') or data.get('Body', '')
+        return {'subject': subject, 'body': body}
+    except json.JSONDecodeError as e:
+        return {'status': 'failed', 'error': f'Failed to parse Gemini response: {e}', 'raw': (raw or '')[:300]}
+    except Exception as e:
+        return {'status': 'failed', 'error': str(e)}

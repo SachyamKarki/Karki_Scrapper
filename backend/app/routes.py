@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 from bson.objectid import ObjectId
+import json
+import os
 import subprocess
 import uuid
 from website_analyzer import analyzer
@@ -16,6 +18,16 @@ CURRENT_BATCH_ID = None
 def health():
     """Public health check - no auth required (for Render, load balancers)."""
     return jsonify({'status': 'ok'}), 200
+
+@main.route('/db_check')
+def db_check():
+    """Diagnostic: test MongoDB connection (no auth required)."""
+    try:
+        coll = get_db_connection()
+        count = coll.count_documents({})
+        return jsonify({'status': 'ok', 'connected': True, 'places_count': count}), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'connected': False, 'error': str(e)}), 500
 
 def render_dashboard(places, title="Dashboard", show_join=False, is_scrappy=False, pagination=None):
     # Render the template from file instead of string
@@ -126,11 +138,26 @@ def scrape():
         CURRENT_BATCH_ID = str(uuid.uuid4())
         
         try:
-            # Pass Query and Batch ID to run.sh
-            subprocess.run(["./run.sh", query, CURRENT_BATCH_ID], check=True)
+            backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            run_sh = os.path.join(backend_dir, 'run.sh')
+            if not os.path.isfile(run_sh):
+                raise FileNotFoundError(f"run.sh not found at {run_sh}")
+            log_path = os.path.join(backend_dir, 'data', 'scrape.log')
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
+            log_file = open(log_path, 'a')
+            log_file.write(f"\n--- Scrape started: {query} ({CURRENT_BATCH_ID}) ---\n")
+            log_file.flush()
+            subprocess.Popen(
+                ['bash', run_sh, str(query), CURRENT_BATCH_ID],
+                cwd=backend_dir,
+                env={**os.environ},
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                start_new_session=True
+            )
             
             if request.is_json or request.accept_mimetypes.accept_json:
-                return jsonify({'success': True, 'batch_id': CURRENT_BATCH_ID, 'message': 'Scraping started successfully'})
+                return jsonify({'success': True, 'batch_id': CURRENT_BATCH_ID, 'message': 'Scraping started. Results will appear shortly.'})
                 
         except Exception as e:
             print(f"Scraper Error: {e}")
@@ -193,9 +220,29 @@ def api_updates():
         
     return jsonify({'new_items': new_items})
 
+def _get_url_for_analysis(business, url_type):
+    """Resolve URL from business based on url_type: website, facebook, instagram."""
+    url_type = (url_type or 'website').strip().lower()
+    if url_type == 'website':
+        return business.get('website')
+    if url_type in ('facebook', 'instagram'):
+        sl = business.get('social_links')
+        if sl:
+            try:
+                data = json.loads(sl) if isinstance(sl, str) else sl
+                if isinstance(data, dict):
+                    # Handle both 'facebook' and 'Facebook' keys
+                    for k, v in data.items():
+                        if k and v and str(k).lower() == url_type:
+                            return v
+            except (json.JSONDecodeError, TypeError):
+                pass
+    return None
+
+
 @main.route('/analyze/<item_id>', methods=['POST'])
 def analyze_website_endpoint(item_id):
-    """Trigger website analysis for a business. Uses Gemini when GEMINI_API_KEY is set."""
+    """Trigger analysis for a business (website, facebook, or instagram). Uses Gemini when GEMINI_API_KEY is set."""
     import os
     try:
         collection = get_db_connection()
@@ -205,20 +252,31 @@ def analyze_website_endpoint(item_id):
         if not business:
             return jsonify({'success': False, 'error': 'Business not found'})
         
-        website = business.get('website')
-        if not website:
-            return jsonify({'success': False, 'error': 'No website URL available'})
+        # Accept url_type from POST body: website, facebook, instagram
+        data = request.get_json(silent=True) or {}
+        url_type = (data.get('url_type') or 'website').strip().lower()
         
-        # Use Gemini when API key is set, otherwise fallback to local analyzer
+        url = _get_url_for_analysis(business, url_type)
+        if not url:
+            type_label = {'website': 'Website', 'facebook': 'Facebook', 'instagram': 'Instagram'}.get(url_type, url_type)
+            return jsonify({'success': False, 'error': f'No {type_label} URL available for this business'})
+        
+        # Use Gemini when API key is set, otherwise fallback to local analyzer (website only)
         if os.getenv('GEMINI_API_KEY'):
             from .gemini_analyzer import analyze_with_gemini
+            # For Facebook/Instagram, pass website URL for Serper keyword ranking (10 SEO keywords)
+            website_url = business.get('website') if url_type in ('facebook', 'instagram') else None
             analysis_result = analyze_with_gemini(
-                website,
+                url,
                 business_name=business.get('name', ''),
-                business_category=business.get('category', '')
+                business_category=business.get('category', ''),
+                url_type=url_type,
+                website_url_for_serper=website_url
             )
         else:
-            analysis_result = analyzer.analyze_website(website)
+            if url_type != 'website':
+                return jsonify({'success': False, 'error': 'Facebook/Instagram analysis requires GEMINI_API_KEY'})
+            analysis_result = analyzer.analyze_website(url)
         
         # Store analysis in MongoDB
         collection.update_one(
@@ -244,6 +302,50 @@ def analyze_website_endpoint(item_id):
     except Exception as e:
         print(f"Error in analysis: {e}")
         return jsonify({'success': False, 'error': str(e)})
+
+@main.route('/analyze_link', methods=['POST'])
+def analyze_link_endpoint():
+    """Direct link analysis: paste any website or Facebook URL, get report. No DB storage."""
+    import os
+    try:
+        data = request.get_json(silent=True) or {}
+        url = (data.get('url') or '').strip()
+        url_type = (data.get('url_type') or 'website').strip().lower()
+        
+        if not url:
+            return jsonify({'success': False, 'error': 'URL is required'})
+        
+        if url_type not in ('website', 'facebook'):
+            return jsonify({'success': False, 'error': 'url_type must be website or facebook'})
+        
+        if not url.startswith('http'):
+            url = 'https://' + url
+        
+        if not os.getenv('GEMINI_API_KEY'):
+            return jsonify({'success': False, 'error': 'GEMINI_API_KEY not configured'})
+        
+        from .gemini_analyzer import analyze_with_gemini
+        analysis_result = analyze_with_gemini(
+            url,
+            business_name='',
+            business_category='',
+            url_type=url_type,
+            website_url_for_serper=url if url_type == 'website' else None  # Serper uses URL domain for website
+        )
+        
+        if analysis_result.get('status') == 'failed':
+            return jsonify({'success': False, 'error': analysis_result.get('error', 'Analysis failed')})
+        
+        return jsonify({
+            'success': True,
+            'analysis': analysis_result,
+            'url': url,
+            'url_type': url_type
+        })
+    except Exception as e:
+        print(f"Error in analyze_link: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
 
 @main.route('/get_analysis/<item_id>')
 def get_analysis_endpoint(item_id):
@@ -294,6 +396,76 @@ def save_note(item_id):
         return jsonify({'success': result.modified_count > 0 or result.matched_count > 0})
     except Exception as e:
         print(f"Error saving note: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@main.route('/generate_email_from_analysis', methods=['POST'])
+def generate_email_from_analysis():
+    """Generate cold email from analysis (for Link Analyzer - no item_id). Accepts analysis, url, template_type."""
+    try:
+        data = request.get_json() or {}
+        analysis = data.get('analysis')
+        url = (data.get('url') or '').strip()
+        template_type = int(data.get('template_type', 1))
+        if not analysis or not isinstance(analysis, dict):
+            return jsonify({'success': False, 'error': 'analysis required'})
+        place = {'name': '', 'category': '', 'website': url}
+        from .gemini_analyzer import generate_email_with_gemini
+        result = generate_email_with_gemini(
+            place=place,
+            analysis=analysis,
+            note_text='',
+            template_type=template_type,
+            custom_prompt=''
+        )
+        if result.get('status') == 'failed':
+            return jsonify({'success': False, 'error': result.get('error', 'Generation failed')})
+        return jsonify({'success': True, 'subject': result.get('subject', ''), 'body': result.get('body', '')})
+    except Exception as e:
+        print(f"Error in generate_email_from_analysis: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@main.route('/generate_email', methods=['POST'])
+def generate_email():
+    """Generate cold email with Gemini using Analysis + Notes. Returns subject and body."""
+    try:
+        data = request.get_json() or {}
+        item_id = data.get('item_id') or data.get('place_id')
+        template_type = int(data.get('template_type', 1))
+        custom_prompt = (data.get('custom_prompt') or '').strip()
+
+        if not item_id:
+            return jsonify({'success': False, 'error': 'item_id required'})
+
+        collection = get_db_connection()
+        business = collection.find_one({'_id': ObjectId(item_id)})
+        if not business:
+            return jsonify({'success': False, 'error': 'Business not found'})
+
+        analysis = business.get('analysis')
+        note_data = business.get('note') or {}
+        note_text = note_data.get('text', '') if isinstance(note_data, dict) else ''
+
+        from .gemini_analyzer import generate_email_with_gemini
+        result = generate_email_with_gemini(
+            place=business,
+            analysis=analysis,
+            note_text=note_text,
+            template_type=template_type,
+            custom_prompt=custom_prompt
+        )
+
+        if result.get('status') == 'failed':
+            err = result.get('error', 'Generation failed')
+            return jsonify({'success': False, 'error': err})
+
+        return jsonify({
+            'success': True,
+            'subject': result.get('subject', ''),
+            'body': result.get('body', '')
+        })
+    except Exception as e:
+        print(f"Error generating email: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
 @main.route('/get_note/<item_id>')

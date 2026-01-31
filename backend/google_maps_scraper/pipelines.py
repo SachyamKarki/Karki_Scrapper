@@ -1,3 +1,4 @@
+import certifi
 import pymongo
 
 class MongoDBPipeline:
@@ -15,7 +16,11 @@ class MongoDBPipeline:
         )
 
     def open_spider(self, spider):
-        self.client = pymongo.MongoClient(self.mongo_uri)
+        # tlsCAFile needed for MongoDB Atlas (mongodb+srv://)
+        self.client = pymongo.MongoClient(
+            self.mongo_uri,
+            tlsCAFile=certifi.where()
+        )
         self.db = self.client[self.mongo_db]
 
     def close_spider(self, spider):

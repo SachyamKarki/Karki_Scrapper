@@ -134,6 +134,35 @@ Edit `config.py` or `google_maps_scraper/settings.py` to configure:
 
 4. **Rotate API keys** (GEMINI_API_KEY, SERPER_API_KEY) if they were ever exposed.
 
+## Troubleshooting
+
+### Database not connecting
+- **Check MongoDB**: Run `cd backend && source venv/bin/activate && python scripts/check_mongo.py`
+- **API check**: Visit `http://localhost:5555/api/db_check` (or your backend URL + `/api/db_check`) – returns `connected: true` if MongoDB works
+- **MongoDB Atlas**: Ensure `MONGO_URI` in `backend/.env` is correct and Network Access allows your IP (or `0.0.0.0/0` for production)
+
+### Scraping not working
+- **Playwright browser**: Run `cd backend && source venv/bin/activate && playwright install chromium` (required!)
+- **Map not opening**: To see the browser window when scraping locally, add `HEADLESS=False` to `backend/.env`
+- **Quick setup**: Run `./backend/scripts/setup_local.sh` to install deps + Playwright
+- **Logs**: Check the terminal where the Flask backend runs for scrape errors
+
+### Map link not opening (address in Dashboard)
+- The address links to Google Maps. Ensure pop-up blockers allow new tabs.
+- If blocked, right-click the address → "Open link in new tab"
+
+### Local setup (frontend + backend)
+```bash
+# Terminal 1 – backend
+cd backend && source venv/bin/activate && python app.py
+
+# Terminal 2 – frontend
+cd frontend && npm run dev
+```
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5555
+- Frontend proxies `/api`, `/auth`, etc. to the backend
+
 ## Notes
 
 - This is a standalone scraper project (no n8n integration)

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Loader2, ChevronLeft, ChevronRight, FileDown, FileText, BarChart2, CheckCircle, XCircle, Clock, Trash2, ChevronDown } from 'lucide-react';
+import { Search, Loader2, ChevronLeft, ChevronRight, FileDown, FileText, BarChart2, CheckCircle, XCircle, Clock, Trash2, ChevronDown, MapPin, Globe, Facebook, Instagram, Eye, Mail } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import NotesModal from '../components/NotesModal';
 import AnalysisModal from '../components/AnalysisModal';
@@ -30,6 +30,14 @@ const Dashboard = () => {
     const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
     const [selectedAnalysisItemId, setSelectedAnalysisItemId] = useState(null);
 
+    // Analyze Choice Modal State (Website / Facebook / Instagram)
+    const [isAnalyzeChoiceOpen, setIsAnalyzeChoiceOpen] = useState(false);
+    const [placeForAnalyzeChoice, setPlaceForAnalyzeChoice] = useState(null);
+
+    // View Choice Modal State (View Report | Prepare Template)
+    const [isViewChoiceOpen, setIsViewChoiceOpen] = useState(false);
+    const [placeForViewChoice, setPlaceForViewChoice] = useState(null);
+
     // Email Management Modal State (opens when clicking an email)
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [selectedPlaceForEmail, setSelectedPlaceForEmail] = useState(null);
@@ -37,25 +45,22 @@ const Dashboard = () => {
     // Analysis State
     const [analyzingIds, setAnalyzingIds] = useState(new Set());
 
-    const fetchPlaces = async (targetPage = 1) => {
-        setLoading(true);
+    const fetchPlaces = async (targetPage = 1, options = {}) => {
+        const silent = options.silent === true;
+        if (!silent) setLoading(true);
         try {
-            // Include search filter in the request
             const params = new URLSearchParams({
                 page: targetPage,
                 search: searchText,
                 status: statusFilter
             });
-            
             const response = await axios.get(`/api/?${params.toString()}`, {
                 headers: { 'Accept': 'application/json' }
             });
             setPlaces(response.data.places || []);
             setPagination(response.data.pagination || null);
             setPage(targetPage);
-            
-            // Clear selection on page change or filter
-            setSelectedItems(new Set());
+            if (!silent) setSelectedItems(new Set());
         } catch (error) {
             console.error('Error fetching places:', error);
         } finally {
@@ -63,9 +68,9 @@ const Dashboard = () => {
         }
     };
 
-    // Debounce search; refetch when search or status changes
+    // Debounce search; refetch when search or status changes (silent = no full-page loader)
     useEffect(() => {
-        const timer = setTimeout(() => fetchPlaces(1), 400);
+        const timer = setTimeout(() => fetchPlaces(1, { silent: true }), 400);
         return () => clearTimeout(timer);
     }, [searchText, statusFilter]); 
 
@@ -76,12 +81,20 @@ const Dashboard = () => {
 
         setScraping(true);
         try {
-            await axios.post('/api/scrape', { query });
-            alert('Scraping started! Results will appear shortly.');
-            setQuery('');
-            setTimeout(() => fetchPlaces(1), 3000); 
+            const res = await axios.post('/api/scrape', { query });
+            if (res.data?.success) {
+                setQuery('');
+                alert('Scraping started! This takes ~1 min. Refreshing in 10s...');
+                // Poll for new results (scrape takes ~1 min) — silent = no full-page reload
+                setTimeout(() => fetchPlaces(1, { silent: true }), 10000);
+                setTimeout(() => fetchPlaces(1, { silent: true }), 30000);
+                setTimeout(() => fetchPlaces(1, { silent: true }), 60000);
+            } else {
+                alert(res.data?.error || 'Scrape failed');
+            }
         } catch (error) {
-            alert('Failed to start scraper');
+            const msg = error.response?.data?.error || error.message || 'Failed to start scraper';
+            alert(`Scrape failed: ${msg}`);
         } finally {
             setScraping(false);
         }
@@ -101,18 +114,20 @@ const Dashboard = () => {
         }
     };
 
-    // ... (runAnalysis, openNotes, downloadExcel, getStatusColor - keep existing)
-    const runAnalysis = async (id) => {
+    const runAnalysis = async (id, urlType = 'website') => {
         setAnalyzingIds(prev => new Set(prev).add(id));
+        setIsAnalyzeChoiceOpen(false);
+        setPlaceForAnalyzeChoice(null);
         try {
-            const response = await axios.post(`/api/analyze/${id}`);
+            const response = await axios.post(`/api/analyze/${id}`, { url_type: urlType }, { timeout: 120000 });
             if (response.data.success) {
-                fetchPlaces(page); 
+                fetchPlaces(page, { silent: true });
             } else {
                 alert(response.data.error || 'Analysis failed');
             }
         } catch (error) {
-            alert('Error running analysis');
+            const msg = error.response?.data?.error || error.message || 'Error running analysis';
+            alert(msg);
         } finally {
             setAnalyzingIds(prev => {
                 const next = new Set(prev);
@@ -120,6 +135,26 @@ const Dashboard = () => {
                 return next;
             });
         }
+    };
+
+    const openAnalyzeChoice = (place) => {
+        setPlaceForAnalyzeChoice(place);
+        setIsAnalyzeChoiceOpen(true);
+    };
+
+    const getPlaceUrlByType = (place, type) => {
+        if (type === 'website') return place?.website;
+        const sl = place?.social_links;
+        if (!sl) return null;
+        try {
+            const data = typeof sl === 'string' ? JSON.parse(sl) : sl;
+            if (data && typeof data === 'object') {
+                for (const [k, v] of Object.entries(data)) {
+                    if (k && v && String(k).toLowerCase() === type) return v;
+                }
+            }
+        } catch (_) {}
+        return null;
     };
 
     const openNotes = (id) => {
@@ -130,6 +165,28 @@ const Dashboard = () => {
     const openAnalysis = (id) => {
         setSelectedAnalysisItemId(id);
         setIsAnalysisOpen(true);
+    };
+
+    const openViewChoice = (place) => {
+        setPlaceForViewChoice(place);
+        setIsViewChoiceOpen(true);
+    };
+
+    const handleViewReport = () => {
+        if (placeForViewChoice?._id) {
+            openAnalysis(placeForViewChoice._id);
+        }
+        setIsViewChoiceOpen(false);
+        setPlaceForViewChoice(null);
+    };
+
+    const handlePrepareTemplate = () => {
+        if (placeForViewChoice) {
+            setSelectedPlaceForEmail(placeForViewChoice);
+            setIsEmailModalOpen(true);
+        }
+        setIsViewChoiceOpen(false);
+        setPlaceForViewChoice(null);
     };
 
     const downloadExcel = () => {
@@ -164,7 +221,7 @@ const Dashboard = () => {
 
         try {
             await axios.post('/api/delete_items', { ids: idsToDelete });
-            fetchPlaces(page); // Refresh
+            fetchPlaces(page, { silent: true });
         } catch (error) {
             alert('Failed to delete items');
         }
@@ -381,12 +438,13 @@ const Dashboard = () => {
                                                 <td style={cellStyle}>
                                                     {place.address ? (
                                                         <a 
-                                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.address)}`}
+                                                            href={`https://www.google.com/maps/search/?query=${encodeURIComponent(place.address + (place.name ? ' ' + place.name : ''))}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            style={{ fontSize: '0.75rem', color: '#2563eb', textDecoration: 'none', fontWeight: 500, lineHeight: 1.25, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', maxWidth: '120px' }}
-                                                            title={place.address}
+                                                            style={{ fontSize: '0.75rem', color: '#2563eb', textDecoration: 'none', fontWeight: 500, lineHeight: 1.25, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', maxWidth: '120px', alignItems: 'center', gap: '4px' }}
+                                                            title={`Open in Google Maps: ${place.address}`}
                                                         >
+                                                            <MapPin size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '2px' }} />
                                                             {place.address}
                                                         </a>
                                                     ) : (
@@ -484,14 +542,14 @@ const Dashboard = () => {
                                                     <div style={{ display: 'flex', gap: '6px' }}>
                                                         {place.analysis ? (
                                                             <button 
-                                                                onClick={() => openAnalysis(place._id)}
+                                                                onClick={() => openViewChoice(place)}
                                                                 style={analysisBtnStyle}
                                                             >
                                                                 <FileText size={12} /> View
                                                             </button>
                                                         ) : (
                                                             <button 
-                                                                onClick={() => runAnalysis(place._id)}
+                                                                onClick={() => openAnalyzeChoice(place)}
                                                                 disabled={analyzingIds.has(place._id)}
                                                                 style={{ ...analysisBtnStyle, background: '#f3f4f6', color: '#4b5563', border: '1px solid #d1d5db', cursor: analyzingIds.has(place._id) ? 'wait' : 'pointer' }}
                                                             >
@@ -524,14 +582,14 @@ const Dashboard = () => {
                             </div>
                             <div style={{ display: 'flex', gap: '8px' }}>
                                 <button 
-                                    onClick={() => fetchPlaces(Math.max(1, page - 1))}
+                                    onClick={() => fetchPlaces(Math.max(1, page - 1), { silent: true })}
                                     disabled={!pagination.has_prev}
                                     style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #e5e7eb', background: 'white', color: '#374151', cursor: pagination.has_prev ? 'pointer' : 'not-allowed', opacity: pagination.has_prev ? 1 : 0.5 }}
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
                                 <button 
-                                    onClick={() => fetchPlaces(Math.min(pagination.total_pages, page + 1))}
+                                    onClick={() => fetchPlaces(Math.min(pagination.total_pages, page + 1), { silent: true })}
                                     disabled={!pagination.has_next}
                                     style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #e5e7eb', background: 'white', color: '#374151', cursor: pagination.has_next ? 'pointer' : 'not-allowed', opacity: pagination.has_next ? 1 : 0.5 }}
                                 >
@@ -558,6 +616,102 @@ const Dashboard = () => {
                 onClose={() => { setIsEmailModalOpen(false); setSelectedPlaceForEmail(null); }}
                 place={selectedPlaceForEmail}
             />
+            {/* View Choice Modal: View Report | Prepare Template */}
+            {isViewChoiceOpen && placeForViewChoice && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)'
+                }} onClick={() => { setIsViewChoiceOpen(false); setPlaceForViewChoice(null); }}>
+                    <div style={{
+                        background: 'white', borderRadius: '12px', padding: '24px', minWidth: '340px', maxWidth: '90vw',
+                        boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)'
+                    }} onClick={e => e.stopPropagation()}>
+                        <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 600, color: '#111827' }}>View analysis result</h3>
+                        <p style={{ margin: '0 0 20px', fontSize: '0.9rem', color: '#6b7280' }}>{placeForViewChoice.name || 'This business'}</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <button
+                                onClick={handleViewReport}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px',
+                                    borderRadius: '8px', border: '1px solid #e5e7eb', background: 'white',
+                                    color: '#374151', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 500,
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <Eye size={20} color="#2563eb" />
+                                View Report — Full analysis report
+                            </button>
+                            <button
+                                onClick={handlePrepareTemplate}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px',
+                                    borderRadius: '8px', border: '1px solid #e5e7eb', background: 'white',
+                                    color: '#374151', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 500,
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <Mail size={20} color="#2563eb" />
+                                Prepare Template — Edit cold email (left) with analysis (right)
+                            </button>
+                        </div>
+                        <button
+                            onClick={() => { setIsViewChoiceOpen(false); setPlaceForViewChoice(null); }}
+                            style={{ marginTop: '16px', width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#f9fafb', color: '#6b7280', cursor: 'pointer', fontSize: '0.9rem' }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* Analyze Choice Modal: Website, Facebook, Instagram */}
+            {isAnalyzeChoiceOpen && placeForAnalyzeChoice && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)'
+                }} onClick={() => { setIsAnalyzeChoiceOpen(false); setPlaceForAnalyzeChoice(null); }}>
+                    <div style={{
+                        background: 'white', borderRadius: '12px', padding: '24px', minWidth: '320px', maxWidth: '90vw',
+                        boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)'
+                    }} onClick={e => e.stopPropagation()}>
+                        <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 600, color: '#111827' }}>Choose what to analyze</h3>
+                        <p style={{ margin: '0 0 20px', fontSize: '0.9rem', color: '#6b7280' }}>{placeForAnalyzeChoice.name || 'This business'}</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {[
+                                { type: 'website', label: 'Website', Icon: Globe, color: '#2563eb' },
+                                { type: 'facebook', label: 'Facebook', Icon: Facebook, color: '#1877f2' },
+                                { type: 'instagram', label: 'Instagram', Icon: Instagram, color: '#e4405f' }
+                            ].map(({ type, label, Icon, color }) => {
+                                const url = getPlaceUrlByType(placeForAnalyzeChoice, type);
+                                const enabled = !!url;
+                                return (
+                                    <button
+                                        key={type}
+                                        onClick={() => enabled && runAnalysis(placeForAnalyzeChoice._id, type)}
+                                        disabled={!enabled}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px',
+                                            borderRadius: '8px', border: `1px solid ${enabled ? '#e5e7eb' : '#f3f4f6'}`,
+                                            background: enabled ? 'white' : '#f9fafb', color: enabled ? '#374151' : '#9ca3af',
+                                            cursor: enabled ? 'pointer' : 'not-allowed', fontSize: '0.95rem', fontWeight: 500,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        <Icon size={20} color={enabled ? color : '#9ca3af'} />
+                                        {label}
+                                        {!enabled && <span style={{ marginLeft: 'auto', fontSize: '0.8rem' }}>No URL</span>}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <button
+                            onClick={() => { setIsAnalyzeChoiceOpen(false); setPlaceForAnalyzeChoice(null); }}
+                            style={{ marginTop: '16px', width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#f9fafb', color: '#6b7280', cursor: 'pointer', fontSize: '0.9rem' }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
             </>
     );
 };

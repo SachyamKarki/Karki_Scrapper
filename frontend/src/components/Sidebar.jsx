@@ -11,7 +11,8 @@ import {
     MessageSquare,
     Mail,
     Send,
-    Settings
+    Settings,
+    Link2
 } from 'lucide-react';
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
@@ -25,6 +26,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 
     const navItems = [
         { label: 'Dashboard', icon: LayoutDashboard, path: '/', show: true },
+        { label: 'Link Analyzer', icon: Link2, path: '/link-analyzer', show: true },
         { label: 'Email Management', icon: Send, path: '/email', show: true },
         { label: 'Messages', icon: Mail, path: '/messages', show: true },
         { label: 'Team Chat', icon: MessageSquare, path: '/chat', show: user?.is_admin },
